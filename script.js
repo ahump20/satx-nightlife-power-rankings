@@ -339,7 +339,12 @@ function setupEventListeners() {
     
     // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.nav') && navList.classList.contains('active')) {
+        if (
+            !e.target.closest('.nav') &&
+            !e.target.closest('#' + menuToggle.id) &&
+            !e.target.closest('#' + navList.id) &&
+            navList.classList.contains('active')
+        ) {
             navList.classList.remove('active');
         }
     });
