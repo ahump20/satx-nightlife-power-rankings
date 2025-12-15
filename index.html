@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="San Antonio Nightlife Power Rankings - Discover the best bars, clubs, and entertainment venues in San Antonio">
+    <title>SATX Nightlife Power Rankings</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>🌃 SATX Nightlife</h1>
+                    <p class="tagline">Power Rankings</p>
+                </div>
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="#rankings" class="nav-link active">Rankings</a></li>
+                        <li><a href="#categories" class="nav-link">Categories</a></li>
+                        <li><a href="#about" class="nav-link">About</a></li>
+                    </ul>
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Discover San Antonio's Hottest Nightlife</h2>
+                <p class="hero-subtitle">Real-time rankings of the best bars, clubs, and entertainment venues in SATX</p>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search venues..." class="search-input">
+                    <button class="search-button" id="searchButton">🔍</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters" id="categories">
+        <div class="container">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">All Venues</button>
+                <button class="filter-btn" data-category="bars">Bars</button>
+                <button class="filter-btn" data-category="clubs">Clubs</button>
+                <button class="filter-btn" data-category="lounges">Lounges</button>
+                <button class="filter-btn" data-category="live-music">Live Music</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard / Rankings -->
+    <main class="dashboard" id="rankings">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>Current Power Rankings</h2>
+                <div class="sort-options">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="rank">Rank</option>
+                        <option value="rating">Rating</option>
+                        <option value="name">Name</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Rankings Grid -->
+            <div class="rankings-grid" id="rankingsGrid">
+                <!-- Venue cards will be dynamically inserted here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-content">
+                <h2>About SATX Nightlife Rankings</h2>
+                <p>
+                    We rank San Antonio's nightlife venues based on multiple factors including 
+                    atmosphere, music quality, crowd energy, service, and overall experience. 
+                    Our rankings are updated regularly to reflect the current state of SATX nightlife.
+                </p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>50+</h3>
+                        <p>Venues Tracked</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Weekly</h3>
+                        <p>Rankings Updated</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>5</h3>
+                        <p>Categories</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 SATX Nightlife Power Rankings. All rights reserved.</p>
+            <p class="footer-note">Rankings are for entertainment purposes and based on various factors.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
