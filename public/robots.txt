@@ -1,0 +1,6 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://satx-nightlife.vercel.app/sitemap.xml

@@ -1,0 +1,6 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#8B5CF6"/>
+  <circle cx="256" cy="200" r="80" fill="#F59E0B"/>
+  <path d="M 150 320 L 256 400 L 362 320 L 256 240 Z" fill="#F59E0B"/>
+  <text x="256" y="470" font-family="Arial" font-size="80" font-weight="bold" fill="white" text-anchor="middle">SATX</text>
+</svg>

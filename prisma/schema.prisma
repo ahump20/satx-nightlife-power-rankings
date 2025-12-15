@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum TrendDirection {
+  up
+  down
+  stable
+  new
+}
+
+model Venue {
+  id                String   @id @default(cuid())
+  name              String
+  address           String
+  city              String   @default("San Antonio")
+  state             String   @default("TX")
+  zipCode           String?
+  latitude          Float
+  longitude         Float
+  phoneNumber       String?
+  website           String?
+  googlePlaceId     String?  @unique
+  yelpBusinessId    String?  @unique
+  category          String[] // e.g., ["bar", "nightclub", "restaurant"]
+  priceLevel        Int?     @default(2) // 1-4 scale
+  expertBoost       Float    @default(0) // Boost for George's Keep, Camp 1604, etc.
+  isExpertVenue     Boolean  @default(false)
+  imageUrl          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  rankings          Ranking[]
+  reviews           Review[]
+  deals             Deal[]
+  events            Event[]
+  checkins          CheckIn[]
+
+  @@index([latitude, longitude])
+  @@index([googlePlaceId])
+  @@index([yelpBusinessId])
+}
+
+model Ranking {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  month       DateTime // First day of the month
+  score       Float    // Computed power ranking score
+  rank        Int      // Position in rankings
+  checkInCount Int     @default(0)
+  reviewCount Int      @default(0)
+  avgRating   Float    @default(0)
+  trendDirection TrendDirection // Enum: "up", "down", "stable", "new"
+  trendChange Int      @default(0) // Change in rank from previous month
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([venueId, month])
+  @@index([month])
+  @@index([score])
+  @@index([rank])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  source      String   // "google", "yelp", "internal"
+  externalId  String?  // ID from external source
+  rating      Float
+  comment     String?
+  authorName  String?
+  reviewDate  DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([venueId])
+  @@index([reviewDate])
+  @@index([source])
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  dayOfWeek   String[] // ["monday", "tuesday", etc.]
+  startTime   String?  // "17:00"
+  endTime     String?  // "21:00"
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([isActive])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  eventDate   DateTime
+  startTime   String?
+  endTime     String?
+  imageUrl    String?
+  ticketUrl   String?
+  source      String?  // "internal", "google", etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([eventDate])
+}
+
+model CheckIn {
+  id          String   @id @default(cuid())
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId      String?  // Optional user tracking
+  checkInTime DateTime @default(now())
+  latitude    Float?
+  longitude   Float?
+
+  @@index([venueId])
+  @@index([checkInTime])
+}
