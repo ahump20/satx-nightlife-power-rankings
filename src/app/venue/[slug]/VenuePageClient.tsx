@@ -1,9 +1,8 @@
 'use client';
 
-import { useVenueDetails } from '@/hooks/useVenues';
-import { YearTimeline } from '@/components/YearTimeline';
-import { use } from 'react';
+import { use, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Star,
@@ -11,11 +10,18 @@ import {
   Phone,
   Globe,
   Clock,
-  Tag,
-  TrendingUp,
-  TrendingDown,
-  Minus,
+  ExternalLink,
+  Instagram,
 } from 'lucide-react';
+import { ScoreGauge } from '@/components/ui/ScoreGauge';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import {
+  getVenueBySlug,
+  getVenuesByRank,
+  getAreaDisplayName,
+  getTypeDisplayName,
+  type Venue,
+} from '@/lib/data/venues-research';
 
 export default function VenuePageClient({
   params,
@@ -23,28 +29,22 @@ export default function VenuePageClient({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const { venue, ytdStats, isLoading, error } = useVenueDetails(slug);
+  const venue = useMemo(() => getVenueBySlug(slug), [slug]);
+  const allVenues = useMemo(() => getVenuesByRank(), []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 pb-20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-800 rounded w-1/3" />
-            <div className="h-48 bg-gray-800 rounded-xl" />
-            <div className="h-32 bg-gray-800 rounded-xl" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Calculate rank
+  const rank = useMemo(() => {
+    if (!venue) return null;
+    const index = allVenues.findIndex((v) => v.id === venue.id);
+    return index >= 0 ? index + 1 : null;
+  }, [venue, allVenues]);
 
-  if (error || !venue) {
+  if (!venue) {
     return (
-      <div className="min-h-screen bg-gray-900 pb-20 flex items-center justify-center">
+      <div className="min-h-screen bg-midnight flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-400 mb-4">Venue not found</p>
-          <Link href="/" className="text-purple-400 hover:underline">
+          <p className="text-muted mb-4">Venue not found</p>
+          <Link href="/" className="text-copper hover:text-amber">
             Back to home
           </Link>
         </div>
@@ -52,131 +52,164 @@ export default function VenuePageClient({
     );
   }
 
-  const googleRating = venue.ratings?.find(
-    (r: any) => r.source === 'google'
-  );
-  const yelpRating = venue.ratings?.find((r: any) => r.source === 'yelp');
-  const rankChange =
-    (venue.currentRanking?.previousRank || 0) -
-    (venue.currentRanking?.rank || 0);
+  const priceDisplay = '$'.repeat(venue.priceLevel);
+  const imageUrl = venue.photos[0]?.url;
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 bg-gray-900/95 backdrop-blur-sm z-10 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/" className="text-gray-400 hover:text-white">
-            <ArrowLeft className="w-6 h-6" />
+    <div className="min-h-screen bg-midnight">
+      {/* Header with back button */}
+      <div className="sticky top-16 z-30 glass">
+        <div className="container py-3 flex items-center gap-3">
+          <Link
+            href="/rankings"
+            className="btn-ghost p-2 rounded-lg touch-target"
+            aria-label="Back to rankings"
+          >
+            <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-white truncate">{venue.name}</h1>
-            <p className="text-xs text-gray-400">{venue.city}</p>
+            <h1 className="font-semibold text-ivory truncate">{venue.name}</h1>
+            <p className="text-xs text-muted">{getAreaDisplayName(venue.area)}</p>
           </div>
-          {venue.isExpertPick && (
-            <span className="flex-shrink-0 bg-yellow-500 text-black text-xs px-2 py-1 rounded">
-              Expert Pick
-            </span>
-          )}
+          <StatusBadge isOpen={true} />
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Main stats card */}
-        <div className="bg-gradient-to-br from-purple-900/50 to-gray-800 rounded-xl p-4">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-4xl font-bold ${
-                    venue.currentRanking?.rank <= 3
-                      ? 'text-yellow-400'
-                      : 'text-white'
-                  }`}
-                >
-                  #{venue.currentRanking?.rank || '—'}
-                </span>
-                {rankChange !== 0 && (
-                  <div
-                    className={`flex items-center gap-1 ${
-                      rankChange > 0 ? 'text-green-400' : 'text-red-400'
-                    }`}
-                  >
-                    {rankChange > 0 ? (
-                      <TrendingUp className="w-5 h-5" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5" />
-                    )}
-                    <span className="text-sm font-bold">
-                      {rankChange > 0 && '+'}
-                      {rankChange}
-                    </span>
-                  </div>
-                )}
-                {rankChange === 0 && (
-                  <Minus className="w-5 h-5 text-gray-500" />
-                )}
-              </div>
-              <p className="text-sm text-gray-400">Current Rank</p>
-            </div>
-            <div className="text-right">
-              <span className="text-3xl font-bold text-purple-400">
-                {venue.currentRanking?.powerScore?.toFixed(1) || '—'}
-              </span>
-              <p className="text-sm text-gray-400">Power Score</p>
-            </div>
+      {/* Hero image */}
+      <div className="relative aspect-[16/9] bg-slate">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={venue.name}
+            fill
+            priority
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted">
+            <MapPin className="w-16 h-16" />
           </div>
+        )}
+        <div className="gradient-overlay" />
 
-          {/* Ratings */}
-          <div className="flex gap-4">
-            {googleRating && (
-              <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <div>
-                  <span className="font-bold text-white">
-                    {googleRating.rating}
-                  </span>
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({googleRating.reviewCount})
-                  </span>
-                </div>
-                <span className="text-xs text-gray-500">Google</span>
+        {/* Score overlay */}
+        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+          <div>
+            {rank && (
+              <div className="inline-block bg-copper text-midnight font-mono font-bold px-3 py-1 rounded-lg text-lg mb-2">
+                #{rank}
               </div>
             )}
-            {yelpRating && (
-              <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-                <Star className="w-5 h-5 text-red-400 fill-red-400" />
+            <h2 className="font-display text-2xl font-bold text-ivory">
+              {venue.name}
+            </h2>
+            <p className="text-cream/80 text-sm mt-1">
+              {getTypeDisplayName(venue.type)} &middot; {priceDisplay}
+            </p>
+          </div>
+          <ScoreGauge score={venue.score} size="lg" />
+        </div>
+      </div>
+
+      <div className="container py-6 space-y-6">
+        {/* Ratings card */}
+        <div className="card p-4">
+          <h3 className="font-semibold text-ivory text-sm mb-3">Ratings</h3>
+          <div className="flex gap-4">
+            {venue.ratings.google && (
+              <div className="flex items-center gap-2 bg-slate rounded-lg px-3 py-2">
+                <Star className="w-5 h-5 text-copper" />
                 <div>
-                  <span className="font-bold text-white">
-                    {yelpRating.rating}
-                  </span>
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({yelpRating.reviewCount})
+                  <span className="font-mono font-bold text-ivory">
+                    {venue.ratings.google.toFixed(1)}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">Yelp</span>
+                <span className="text-xs text-muted">Google</span>
+              </div>
+            )}
+            {venue.ratings.yelp && (
+              <div className="flex items-center gap-2 bg-slate rounded-lg px-3 py-2">
+                <Star className="w-5 h-5 text-live" />
+                <div>
+                  <span className="font-mono font-bold text-ivory">
+                    {venue.ratings.yelp.toFixed(1)}
+                  </span>
+                </div>
+                <span className="text-xs text-muted">Yelp</span>
+              </div>
+            )}
+            {venue.ratings.tripadvisor && (
+              <div className="flex items-center gap-2 bg-slate rounded-lg px-3 py-2">
+                <Star className="w-5 h-5 text-busy" />
+                <div>
+                  <span className="font-mono font-bold text-ivory">
+                    {venue.ratings.tripadvisor.toFixed(1)}
+                  </span>
+                </div>
+                <span className="text-xs text-muted">TripAdvisor</span>
               </div>
             )}
           </div>
+          <p className="text-xs text-muted mt-3">
+            {venue.reviewCount.toLocaleString()} total reviews
+          </p>
         </div>
 
-        {/* Info */}
-        <div className="bg-gray-800 rounded-xl p-4 space-y-3">
+        {/* Description */}
+        <div className="card p-4">
+          <h3 className="font-semibold text-ivory text-sm mb-2">About</h3>
+          <p className="text-cream/80 text-sm leading-relaxed">
+            {venue.description}
+          </p>
+          {venue.established && (
+            <p className="text-xs text-muted mt-2">
+              Established {venue.established}
+            </p>
+          )}
+        </div>
+
+        {/* Notable features */}
+        {venue.notable.length > 0 && (
+          <div className="card p-4">
+            <h3 className="font-semibold text-ivory text-sm mb-3">
+              What Makes It Special
+            </h3>
+            <ul className="space-y-2">
+              {venue.notable.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-cream/80">
+                  <span className="text-copper">•</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Contact info */}
+        <div className="card p-4 space-y-3">
+          <h3 className="font-semibold text-ivory text-sm mb-3">Contact</h3>
+
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+            <MapPin className="w-5 h-5 text-muted flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-white">{venue.address}</p>
-              <p className="text-sm text-gray-400">
-                {venue.city}, TX {venue.zipCode}
-              </p>
+              <p className="text-cream/80 text-sm">{venue.address}</p>
+              <a
+                href={venue.googleUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-copper hover:text-amber inline-flex items-center gap-1 mt-1"
+              >
+                Open in Maps <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
 
           {venue.phone && (
             <div className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-gray-400" />
+              <Phone className="w-5 h-5 text-muted" />
               <a
                 href={`tel:${venue.phone}`}
-                className="text-purple-400 hover:underline"
+                className="text-copper hover:text-amber text-sm"
               >
                 {venue.phone}
               </a>
@@ -185,131 +218,96 @@ export default function VenuePageClient({
 
           {venue.website && (
             <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-gray-400" />
+              <Globe className="w-5 h-5 text-muted" />
               <a
                 href={venue.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:underline truncate"
+                className="text-copper hover:text-amber text-sm truncate"
               >
-                {venue.website.replace(/^https?:\/\//, '')}
+                {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
               </a>
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <Tag className="w-5 h-5 text-gray-400" />
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded capitalize">
-                {venue.category.replace(/_/g, ' ')}
-              </span>
-              {venue.subCategory && (
-                <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
-                  {venue.subCategory}
-                </span>
-              )}
-              {venue.priceLevel && (
-                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
-                  {'$'.repeat(venue.priceLevel)}
-                </span>
-              )}
+          {venue.instagramHandle && (
+            <div className="flex items-center gap-3">
+              <Instagram className="w-5 h-5 text-muted" />
+              <a
+                href={`https://instagram.com/${venue.instagramHandle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-copper hover:text-amber text-sm"
+              >
+                @{venue.instagramHandle}
+              </a>
             </div>
+          )}
+        </div>
+
+        {/* Hours */}
+        <div className="card p-4">
+          <h3 className="font-semibold text-ivory text-sm mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Hours
+          </h3>
+          <div className="space-y-2">
+            {Object.entries(venue.hours).map(([day, hours]) => (
+              <div key={day} className="flex justify-between text-sm">
+                <span className="text-muted capitalize">{day}</span>
+                <span className="text-cream/80">{hours}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Active deals */}
-        {venue.deals && venue.deals.length > 0 && (
-          <div className="bg-gray-800 rounded-xl p-4">
-            <h2 className="font-bold text-white mb-3 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-green-400" />
-              Active Deals
-            </h2>
-            <div className="space-y-2">
-              {venue.deals
-                .filter((d: any) => d.isActive)
-                .map((deal: any) => (
-                  <div
-                    key={deal.id}
-                    className="bg-green-500/10 border border-green-500/30 rounded-lg p-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-white">{deal.title}</h3>
-                      {deal.dealType === 'happy_hour' && (
-                        <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded">
-                          Happy Hour
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-400 mt-1">
-                      {deal.description}
-                    </p>
-                    {deal.startTime && deal.endTime && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {deal.startTime} - {deal.endTime}
-                      </p>
-                    )}
-                  </div>
-                ))}
+        {/* Features */}
+        {venue.features.length > 0 && (
+          <div className="card p-4">
+            <h3 className="font-semibold text-ivory text-sm mb-3">Features</h3>
+            <div className="flex flex-wrap gap-2">
+              {venue.features.map((feature, i) => (
+                <span
+                  key={i}
+                  className="text-xs bg-slate text-cream/80 px-2.5 py-1 rounded-full"
+                >
+                  {feature}
+                </span>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Score breakdown */}
-        {venue.currentRanking?.scoreBreakdown && (
-          <div className="bg-gray-800 rounded-xl p-4">
-            <h2 className="font-bold text-white mb-3">Score Breakdown</h2>
-            <div className="space-y-2">
-              {Object.entries(venue.currentRanking.scoreBreakdown)
-                .filter(([key]) => key !== 'totalWeightedScore')
-                .map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400 capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-purple-500 rounded-full"
-                          style={{ width: `${Math.min(100, value as number)}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-white w-8 text-right">
-                        {(value as number).toFixed(0)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
+        {/* External links */}
+        <div className="flex gap-3">
+          {venue.yelpUrl && (
+            <a
+              href={venue.yelpUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary flex-1 text-sm"
+            >
+              View on Yelp
+            </a>
+          )}
+          {venue.googleUrl && (
+            <a
+              href={venue.googleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary flex-1 text-sm"
+            >
+              View on Google
+            </a>
+          )}
+        </div>
 
-        {/* YTD Stats */}
-        {ytdStats && (
-          <div className="bg-gray-800 rounded-xl p-4">
-            <h2 className="font-bold text-white mb-3">2024 Performance</h2>
-            <div className="grid grid-cols-3 gap-4 text-center mb-4">
-              <div>
-                <p className="text-2xl font-bold text-purple-400">
-                  #{ytdStats.avgRank}
-                </p>
-                <p className="text-xs text-gray-400">Avg Rank</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-400">
-                  #{ytdStats.bestRank}
-                </p>
-                <p className="text-xs text-gray-400">Best</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-red-400">
-                  #{ytdStats.worstRank}
-                </p>
-                <p className="text-xs text-gray-400">Worst</p>
-              </div>
-            </div>
-            <YearTimeline slug={slug} />
-          </div>
-        )}
+        {/* Data attribution */}
+        <p className="text-xs text-muted text-center pt-4">
+          Ratings and data aggregated from Google, Yelp, and TripAdvisor.
+          <br />
+          Last updated December 2025.
+        </p>
       </div>
     </div>
   );

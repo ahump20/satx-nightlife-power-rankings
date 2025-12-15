@@ -1,9 +1,9 @@
-import { MOCK_VENUES } from '@/lib/data/mock-venues';
+import { VENUES } from '@/lib/data/venues-research';
 import VenuePageClient from './VenuePageClient';
 
 // Generate static paths for all venues
 export async function generateStaticParams() {
-  return MOCK_VENUES.map((venue) => ({
+  return VENUES.map((venue) => ({
     slug: venue.slug,
   }));
 }
