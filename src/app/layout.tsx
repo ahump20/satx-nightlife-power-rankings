@@ -1,17 +1,21 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Navigation, Header } from '@/components/Navigation';
+import { AppShell } from '@/components/layout';
 
 export const metadata: Metadata = {
   title: 'SATX Nightlife Power Rankings',
   description:
-    'Transparent, data-driven rankings for San Antonio NW & Boerne nightlife venues. Live scores, deals, events, and expert picks.',
+    'Research-backed nightlife rankings for San Antonio, Boerne & New Braunfels. Real ratings from locals, no bias.',
   keywords: [
     'San Antonio',
     'nightlife',
     'bars',
     'breweries',
     'Boerne',
+    'New Braunfels',
+    'Gruene Hall',
+    'River Walk',
+    'Pearl District',
     'power rankings',
     'happy hour',
     'cocktails',
@@ -24,7 +28,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'SATX Nightlife Power Rankings',
-    description: 'Find the best bars and nightlife in San Antonio NW & Boerne',
+    description: 'Research-backed nightlife rankings for San Antonio, Boerne & New Braunfels',
     type: 'website',
     locale: 'en_US',
     siteName: 'SATX Nightlife',
@@ -32,7 +36,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'SATX Nightlife Power Rankings',
-    description: 'Find the best bars and nightlife in San Antonio NW & Boerne',
+    description: 'Research-backed nightlife rankings for San Antonio, Boerne & New Braunfels',
   },
   robots: {
     index: true,
@@ -46,7 +50,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#1f1f23',
+  themeColor: '#0a0a0a',
 };
 
 export default function RootLayout({
@@ -60,10 +64,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      <body className="font-sans antialiased bg-gray-900 text-white">
-        <Header />
-        {children}
-        <Navigation />
+      <body>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
