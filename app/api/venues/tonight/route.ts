@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
         events: {
           where: {
             eventDate: {
-              gte: new Date(now.setHours(0, 0, 0, 0)),
-              lt: new Date(now.setHours(23, 59, 59, 999)),
+              gte: new Date(new Date(now).setHours(0, 0, 0, 0)),
+              lt: new Date(new Date(now).setHours(23, 59, 59, 999)),
             },
           },
         },

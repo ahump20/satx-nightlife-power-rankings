@@ -15,7 +15,7 @@ A mobile-first Progressive Web App (PWA) for discovering and ranking nightlife v
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14+ with App Router, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 16 with App Router, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes
 - **Database**: PostgreSQL with PostGIS extension for geospatial queries
 - **ORM**: Prisma

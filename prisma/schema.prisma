@@ -12,6 +12,13 @@ datasource db {
   extensions = [postgis]
 }
 
+enum TrendDirection {
+  up
+  down
+  stable
+  new
+}
+
 model Venue {
   id                String   @id @default(cuid())
   name              String
@@ -54,7 +61,7 @@ model Ranking {
   checkInCount Int     @default(0)
   reviewCount Int      @default(0)
   avgRating   Float    @default(0)
-  trendDirection String // "up", "down", "stable"
+  trendDirection TrendDirection // Enum: "up", "down", "stable", "new"
   trendChange Int      @default(0) // Change in rank from previous month
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
