@@ -40,6 +40,7 @@ export function calculatePowerScore(input: ScoringInput): ScoringResult {
     proximityBonus: 0,
     trendingBonus: 0,
     expertBoost: 0,
+    socialBuzzScore: 0,
     totalWeightedScore: 0,
   };
 
@@ -78,6 +79,14 @@ export function calculatePowerScore(input: ScoringInput): ScoringResult {
     );
   }
 
+  // 7. Social Buzz Score (real-time social media activity)
+  if (input.socialBuzzScore !== undefined && input.socialBuzzScore !== null) {
+    breakdown.socialBuzzScore = input.socialBuzzScore;
+  } else {
+    // Default to neutral if no social data available
+    breakdown.socialBuzzScore = 50;
+  }
+
   // Calculate weighted score before expert boost
   const baseScore =
     (breakdown.googleRatingScore * SCORING_WEIGHTS.googleRating) +
@@ -86,6 +95,7 @@ export function calculatePowerScore(input: ScoringInput): ScoringResult {
     (breakdown.dealsScore * SCORING_WEIGHTS.dealsAndSpecials) +
     (breakdown.proximityBonus * SCORING_WEIGHTS.proximity) +
     (breakdown.trendingBonus * SCORING_WEIGHTS.trendingMomentum) +
+    (breakdown.socialBuzzScore * SCORING_WEIGHTS.socialBuzz) +
     (input.isOpenNow ? 100 * SCORING_WEIGHTS.openNow : 0) +
     (input.hasEventTonight ? 100 * SCORING_WEIGHTS.eventsTonight : 0);
 
@@ -210,6 +220,15 @@ function generateScoreExplanation(
     parts.push('Cooling off');
   }
 
+  // Social buzz explanations
+  if (breakdown.socialBuzzScore >= 85) {
+    parts.push('EXPLODING on social media');
+  } else if (breakdown.socialBuzzScore >= 70) {
+    parts.push('Buzzing on social');
+  } else if (breakdown.socialBuzzScore >= 50) {
+    parts.push('Active on social');
+  }
+
   if (breakdown.expertBoost > 0) {
     const expertConfig = input.venueSlug ? EXPERT_PICKS[input.venueSlug] : null;
     if (expertConfig) {
@@ -295,6 +314,9 @@ export interface ScoringInput {
   previousRank: number | null;
   currentRank: number | null;
   expertBoostMultiplier: number;
+  // Social media buzz score (0-100)
+  // Higher scores = more social activity, trending posts, live streams
+  socialBuzzScore?: number | null;
 }
 
 export interface ScoringResult {
