@@ -32,6 +32,13 @@ export interface Env {
   EVENTBRITE_API_KEY?: string;
   ADMIN_API_KEY?: string;
   JWT_SECRET?: string;
+
+  // Social Media API Keys
+  TWITTER_BEARER_TOKEN?: string;
+  INSTAGRAM_ACCESS_TOKEN?: string;
+  INSTAGRAM_APP_ID?: string;
+  TIKTOK_CLIENT_KEY?: string;
+  TIKTOK_CLIENT_SECRET?: string;
 }
 
 // ============================================
@@ -257,6 +264,51 @@ export interface RawSignalData {
   isOpen?: boolean;
   eventCount?: number;
   raw: Record<string, unknown>;
+
+  // Social media signals
+  mentions1h?: number;
+  mentions24h?: number;
+  engagement?: number;
+  sentiment?: number; // -1 to 1
+  viralScore?: number; // 0 to 100
+  hashtags?: string[];
+}
+
+export interface SocialSignals {
+  twitter: {
+    mentions1h: number;
+    mentions24h: number;
+    engagement: number;
+    sentiment: number;
+    topTweets?: SocialPost[];
+  };
+  instagram: {
+    mentions1h: number;
+    mentions24h: number;
+    engagement: number;
+    topPosts?: SocialPost[];
+  };
+  tiktok: {
+    mentions24h: number;
+    viralScore: number;
+    viewCount: number;
+    topVideos?: SocialPost[];
+  };
+  combined: {
+    buzzScore: number;
+    trendDirection: 'rising' | 'falling' | 'stable';
+    lastActivity?: string;
+  };
+}
+
+export interface SocialPost {
+  id: string;
+  platform: 'twitter' | 'instagram' | 'tiktok';
+  content?: string;
+  author?: string;
+  engagement: number;
+  postedAt: string;
+  url?: string;
 }
 
 export interface ConnectorError {
@@ -310,6 +362,14 @@ export interface ScoringWeights {
   recency: {
     tonightHalfLifeHours: number;
     trendingHalfLifeDays: number;
+  };
+
+  social?: {
+    twitterWeight: number;
+    instagramWeight: number;
+    tiktokWeight: number;
+    viralThreshold: number;
+    mentionDecayHours: number;
   };
 }
 

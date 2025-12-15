@@ -3,7 +3,7 @@
  * Transparent, documented scoring algorithms for all leaderboards
  */
 
-import type { Env, ScoringWeights, TonightScore, MonthlyScore, TrendingScore, SignalSummary } from '../types';
+import type { Env, ScoringWeights, TonightScore, MonthlyScore, TrendingScore, SignalSummary, SocialSignals } from '../types';
 
 /**
  * Get scoring weights from KV or use defaults
@@ -33,6 +33,13 @@ export async function getWeights(env: Env): Promise<ScoringWeights> {
     bayesian: { m: 10, C: 3.8 },
     proximity: { maxBoostMiles: 5, decayRate: 0.5 },
     recency: { tonightHalfLifeHours: 6, trendingHalfLifeDays: 7 },
+    social: {
+      twitterWeight: 0.4,
+      instagramWeight: 0.35,
+      tiktokWeight: 0.25,
+      viralThreshold: 50,
+      mentionDecayHours: 2,
+    },
   };
 }
 
@@ -68,6 +75,112 @@ export function recencyWeight(hoursAgo: number, halfLifeHours: number): number {
 }
 
 /**
+ * Calculate Social Buzz Score
+ * Combines Twitter, Instagram, and TikTok signals into a unified buzz metric
+ *
+ * Returns 0-100 score:
+ * - 0-20: Low activity
+ * - 20-40: Some buzz
+ * - 40-60: Active
+ * - 60-80: Hot
+ * - 80-100: Viral/Trending
+ */
+export function calculateSocialBuzzScore(
+  social: {
+    twitter: {
+      mentions1h: number;
+      mentions24h: number;
+      engagement: number;
+      sentiment: number;
+    };
+    instagram: {
+      mentions1h: number;
+      mentions24h: number;
+      engagement: number;
+    };
+    tiktok: {
+      mentions24h: number;
+      viralScore: number;
+      viewCount: number;
+    };
+  },
+  weights?: {
+    twitterWeight?: number;
+    instagramWeight?: number;
+    tiktokWeight?: number;
+    viralThreshold?: number;
+  }
+): {
+  buzzScore: number;
+  breakdown: {
+    twitter: number;
+    instagram: number;
+    tiktok: number;
+  };
+  trendDirection: 'rising' | 'falling' | 'stable';
+  isViral: boolean;
+} {
+  const {
+    twitterWeight = 0.4,
+    instagramWeight = 0.35,
+    tiktokWeight = 0.25,
+    viralThreshold = 50,
+  } = weights || {};
+
+  // Twitter score (0-100)
+  // Recent mentions weighted heavily + engagement + sentiment boost
+  const twitterRecent = Math.min(social.twitter.mentions1h * 10, 50);
+  const twitterDaily = Math.min(social.twitter.mentions24h * 2, 30);
+  const twitterEngagement = Math.min(social.twitter.engagement / 100, 15);
+  const sentimentBoost = social.twitter.sentiment > 0 ? social.twitter.sentiment * 5 : 0;
+  const twitterScore = Math.min(twitterRecent + twitterDaily + twitterEngagement + sentimentBoost, 100);
+
+  // Instagram score (0-100)
+  // Strong hourly signals + engagement
+  const instagramRecent = Math.min(social.instagram.mentions1h * 15, 60);
+  const instagramDaily = Math.min(social.instagram.mentions24h * 1.5, 25);
+  const instagramEngagement = Math.min(social.instagram.engagement / 50, 15);
+  const instagramScore = Math.min(instagramRecent + instagramDaily + instagramEngagement, 100);
+
+  // TikTok score (0-100)
+  // Viral potential is key + view count
+  const tiktokViral = social.tiktok.viralScore;
+  const tiktokMentions = Math.min(social.tiktok.mentions24h * 3, 30);
+  const tiktokViews = Math.min(social.tiktok.viewCount / 10000, 20);
+  const tiktokScore = Math.min(tiktokViral + tiktokMentions + tiktokViews, 100);
+
+  // Combined weighted score
+  const buzzScore = Math.round(
+    twitterScore * twitterWeight +
+    instagramScore * instagramWeight +
+    tiktokScore * tiktokWeight
+  );
+
+  // Determine trend direction based on hourly vs daily ratio
+  const hourlyActivity = social.twitter.mentions1h + social.instagram.mentions1h;
+  const dailyActivity = (social.twitter.mentions24h + social.instagram.mentions24h) / 24;
+  const ratio = hourlyActivity / Math.max(dailyActivity, 0.1);
+
+  let trendDirection: 'rising' | 'falling' | 'stable' = 'stable';
+  if (ratio > 2) trendDirection = 'rising';
+  else if (ratio < 0.5) trendDirection = 'falling';
+
+  // Is this viral?
+  const isViral = buzzScore >= viralThreshold || social.tiktok.viralScore >= 70;
+
+  return {
+    buzzScore,
+    breakdown: {
+      twitter: Math.round(twitterScore),
+      instagram: Math.round(instagramScore),
+      tiktok: Math.round(tiktokScore),
+    },
+    trendDirection,
+    isViral,
+  };
+}
+
+/**
  * Calculate Tonight Popularity Score
  *
  * Components (summing to 100):
@@ -90,6 +203,12 @@ export function calculateTonightScore(
     distanceMiles: number;
     expertMultiplier: number;
     hoursAgo: number;
+    // Social signals (optional - will boost score when available)
+    socialBuzz?: {
+      twitter: { mentions1h: number; mentions24h: number; engagement: number; sentiment: number };
+      instagram: { mentions1h: number; mentions24h: number; engagement: number };
+      tiktok: { mentions24h: number; viralScore: number; viewCount: number };
+    };
   },
   weights: ScoringWeights
 ): TonightScore {
@@ -99,13 +218,23 @@ export function calculateTonightScore(
   const adjustedRating = bayesianRating(input.rating, input.ratingCount, bayesian.m, bayesian.C);
   const qualityScore = (adjustedRating / 5) * tonight.quality;
 
-  // Popularity score (0-30): Combined activity signals
+  // Popularity score (0-30): Combined activity signals INCLUDING social media
+  let socialBoost = 0;
+  let socialBuzzData = null;
+
+  if (input.socialBuzz) {
+    socialBuzzData = calculateSocialBuzzScore(input.socialBuzz);
+    // Social buzz adds up to 50% boost to popularity score
+    socialBoost = (socialBuzzData.buzzScore / 100) * 0.5;
+  }
+
   const activitySignal = Math.min(
     (input.recentReviews * 3 + input.checkins * 2 + input.mentions) / 20,
     1
   );
   const recencyFactor = recencyWeight(input.hoursAgo, weights.recency.tonightHalfLifeHours);
-  const popularityScore = activitySignal * recencyFactor * tonight.popularity;
+  const basePopularity = activitySignal * recencyFactor * tonight.popularity;
+  const popularityScore = Math.min(basePopularity * (1 + socialBoost), tonight.popularity);
 
   // Open now bonus (0-15)
   const openNowScore = input.isOpen ? tonight.openNow : 0;
@@ -129,6 +258,14 @@ export function calculateTonightScore(
   // Determine confidence based on data quality
   const confidence = input.ratingCount > 50 && input.recentReviews > 2 ? 'high' : input.ratingCount > 10 ? 'medium' : 'low';
 
+  // Build sources list
+  const sources = ['google', 'yelp'];
+  if (input.socialBuzz) {
+    if (input.socialBuzz.twitter.mentions1h > 0 || input.socialBuzz.twitter.mentions24h > 0) sources.push('twitter');
+    if (input.socialBuzz.instagram.mentions1h > 0 || input.socialBuzz.instagram.mentions24h > 0) sources.push('instagram');
+    if (input.socialBuzz.tiktok.mentions24h > 0 || input.socialBuzz.tiktok.viralScore > 0) sources.push('tiktok');
+  }
+
   return {
     total: Math.round(total * 10) / 10,
     breakdown: {
@@ -146,8 +283,17 @@ export function calculateTonightScore(
       recentReviews: input.recentReviews,
       eventsTonight: 0,
       activeDeals: input.activeDeals,
-      sources: [],
+      sources,
     },
+    // Include social buzz details if available
+    ...(socialBuzzData && {
+      socialBuzz: {
+        buzzScore: socialBuzzData.buzzScore,
+        breakdown: socialBuzzData.breakdown,
+        trendDirection: socialBuzzData.trendDirection,
+        isViral: socialBuzzData.isViral,
+      },
+    }),
   };
 }
 

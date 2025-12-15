@@ -6,6 +6,7 @@
 import type { Env, LeaderboardEntry, LeaderboardResponse, VenueWithScores, Badge } from '../types';
 import { getWeights, calculateTonightScore } from './scoring';
 import { calculateDistance } from '../lib/geo';
+import { createSocialSignalsService } from './social';
 
 interface TonightOptions {
   center: { lat: number; lng: number };
@@ -17,7 +18,11 @@ interface TonightOptions {
 }
 
 export class TonightService {
-  constructor(private env: Env) {}
+  private socialService;
+
+  constructor(private env: Env) {
+    this.socialService = createSocialSignalsService(env);
+  }
 
   async getLeaderboard(options: TonightOptions): Promise<LeaderboardResponse> {
     const { center, radiusMiles, limit, offset, category, expertMode } = options;
@@ -65,6 +70,33 @@ export class TonightService {
     // Process venues
     const venuesWithScores: Array<VenueWithScores & { score: number }> = [];
 
+    // Pre-fetch social signals for all venues (batch for efficiency)
+    // In production, this would be cached in KV with short TTL
+    const socialSignalsCache = new Map<string, any>();
+
+    // Fetch social signals in parallel for venues within radius (limited batch)
+    const venuesInRadius = (result.results || []).filter((row: any) => {
+      const distance = calculateDistance(center.lat, center.lng, row.latitude, row.longitude);
+      return distance <= radiusMiles;
+    }).slice(0, 20); // Limit to top 20 for API efficiency
+
+    await Promise.all(
+      venuesInRadius.map(async (row: any) => {
+        try {
+          const signals = await this.socialService.getVenueSignals(
+            row.name,
+            row.id,
+            row.neighborhood,
+            row.category
+          );
+          socialSignalsCache.set(row.id, signals);
+        } catch (e) {
+          // Social signals are optional - continue without them
+          console.warn(`[Tonight] Failed to fetch social signals for ${row.name}:`, e);
+        }
+      })
+    );
+
     for (const row of result.results || []) {
       const venue = row as any;
       const distance = calculateDistance(center.lat, center.lng, venue.latitude, venue.longitude);
@@ -80,7 +112,28 @@ export class TonightService {
       // Expert boost (only if expert mode enabled)
       const expertMultiplier = expertMode ? venue.expert_boost_multiplier || 1.0 : 1.0;
 
-      // Calculate tonight score
+      // Get social signals for this venue
+      const socialSignals = socialSignalsCache.get(venue.id);
+      const socialBuzz = socialSignals ? {
+        twitter: {
+          mentions1h: socialSignals.twitter.mentions1h,
+          mentions24h: socialSignals.twitter.mentions24h,
+          engagement: socialSignals.twitter.engagement,
+          sentiment: socialSignals.twitter.sentiment,
+        },
+        instagram: {
+          mentions1h: socialSignals.instagram.mentions1h,
+          mentions24h: socialSignals.instagram.mentions24h,
+          engagement: socialSignals.instagram.engagement,
+        },
+        tiktok: {
+          mentions24h: socialSignals.tiktok.mentions24h,
+          viralScore: socialSignals.tiktok.viralScore,
+          viewCount: socialSignals.tiktok.viewCount,
+        },
+      } : undefined;
+
+      // Calculate tonight score with social signals
       const tonightScore = calculateTonightScore(
         {
           rating: venue.current_rating || 0,
@@ -93,6 +146,7 @@ export class TonightService {
           distanceMiles: distance,
           expertMultiplier,
           hoursAgo,
+          socialBuzz,
         },
         weights
       );
@@ -142,6 +196,13 @@ export class TonightService {
       }
       if (venue.score >= 80) {
         badges.push({ type: 'hot_tonight', label: 'Hot Tonight' });
+      }
+      // Social media trending badge
+      const socialBuzz = (venue.scores.tonight as any)?.socialBuzz;
+      if (socialBuzz?.isViral) {
+        badges.push({ type: 'trending_up', label: '🔥 Trending on Social' });
+      } else if (socialBuzz?.buzzScore >= 40 && socialBuzz?.trendDirection === 'rising') {
+        badges.push({ type: 'trending_up', label: '📈 Rising' });
       }
 
       return {
