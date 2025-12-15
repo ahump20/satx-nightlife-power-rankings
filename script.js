@@ -171,7 +171,7 @@ function renderVenues() {
     
     if (filteredVenues.length === 0) {
         rankingsGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <div class="no-venues-message">
                 <h3>No venues found</h3>
                 <p>Try adjusting your filters or search term</p>
             </div>
@@ -192,7 +192,10 @@ function createVenueCard(venue) {
     card.setAttribute('data-category', venue.category);
     
     const rankClass = venue.rank <= 3 ? 'top-3' : '';
-    const stars = '★'.repeat(Math.floor(venue.rating)) + (venue.rating % 1 >= 0.5 ? '½' : '');
+    // Using Unicode stars for cross-browser compatibility
+    const fullStars = Math.floor(venue.rating);
+    const hasHalfStar = venue.rating % 1 >= 0.5;
+    const stars = '★'.repeat(fullStars) + (hasHalfStar ? '½' : '');
     
     card.innerHTML = `
         <div class="venue-rank ${rankClass}">${venue.rank}</div>
@@ -305,7 +308,7 @@ function setupEventListeners() {
     });
     
     // Search button
-    document.querySelector('.search-button').addEventListener('click', () => {
+    document.getElementById('searchButton').addEventListener('click', () => {
         searchVenues(searchInput.value);
     });
     
