@@ -308,9 +308,6 @@ function setupEventListeners() {
     });
     
     // Search button
-    document.getElementById('searchButton').addEventListener('click', () => {
-        searchVenues(searchInput.value);
-    });
     
     // Sort select
     sortSelect.addEventListener('change', (e) => {
