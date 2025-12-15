@@ -197,6 +197,23 @@ function parseTwitterResponse(data: any): TwitterPost[] {
 }
 
 /**
+ * Map Twitter media types to SocialMention media types
+ */
+function mapTwitterMediaType(
+  twitterType?: 'photo' | 'video' | 'gif'
+): 'image' | 'video' | 'story' | 'reel' | 'text' {
+  switch (twitterType) {
+    case 'photo':
+      return 'image';
+    case 'video':
+    case 'gif':
+      return 'video';
+    default:
+      return 'text';
+  }
+}
+
+/**
  * Convert Twitter post to our SocialMention format
  */
 export function twitterPostToMention(
@@ -219,7 +236,7 @@ export function twitterPostToMention(
     commentCount: post.replyCount,
     shareCount: post.retweetCount + post.quoteCount,
     viewCount: post.viewCount || null,
-    mediaType: post.mediaType || 'text',
+    mediaType: mapTwitterMediaType(post.mediaType),
     postedAt: post.createdAt,
     fetchedAt: new Date(),
     engagementScore: engagement,

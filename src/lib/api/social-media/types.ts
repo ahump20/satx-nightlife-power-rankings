@@ -2,6 +2,7 @@
 // Tracks Instagram, TikTok, and Twitter/X activity for SATX venues
 
 export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter';
+export type SocialPlatformOrAll = SocialPlatform | 'all';
 
 export interface SocialMention {
   id: string;
@@ -41,7 +42,7 @@ export interface HourlyActivityPulse {
   id: string;
   venueId: string;
   hour: Date; // Truncated to hour
-  platform: SocialPlatform;
+  platform: SocialPlatformOrAll; // Can be specific platform or 'all' for aggregated
   mentionCount: number;
   totalEngagement: number;
   avgSentiment: number; // -1 to 1 scale
@@ -58,7 +59,7 @@ export interface RealTimeBuzz {
   venueSlug: string;
   venueName: string;
   currentPulse: number; // Real-time buzz score (0-100)
-  hourlyTrend: 'rising' | 'falling' | 'steady' | 'exploding';
+  hourlyTrend: 'rising' | 'falling' | 'steady' | 'exploding' | 'dead';
   peakHour: number; // Hour of peak activity today
   totalMentionsToday: number;
   totalMentionsHour: number;

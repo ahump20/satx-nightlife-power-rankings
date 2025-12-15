@@ -534,11 +534,26 @@ export function generateHourlyPulse(
     .slice(0, 5)
     .map(([tag]) => tag);
 
+  // When platform is 'all', use the dominant platform or default to instagram
+  let dominantPlatform: SocialPlatform = 'instagram';
+  if (platform !== 'all') {
+    dominantPlatform = platform;
+  } else if (platformMentions.length > 0) {
+    const counts = platformMentions.reduce((acc, m) => {
+      acc[m.platform] = (acc[m.platform] || 0) + 1;
+      return acc;
+    }, {} as Record<SocialPlatform, number>);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      dominantPlatform = sorted[0][0] as SocialPlatform;
+    }
+  }
+
   return {
     id: `${venueId}_${hourTimestamp.toISOString()}_${platform}`,
     venueId,
     hour: hourTimestamp,
-    platform,
+    platform: dominantPlatform,
     mentionCount: platformMentions.length,
     totalEngagement: platformMentions.reduce((sum, m) => sum + m.engagementScore, 0),
     avgSentiment: platformMentions.length > 0

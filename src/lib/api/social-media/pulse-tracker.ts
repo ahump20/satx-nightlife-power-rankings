@@ -265,7 +265,12 @@ export function generateBuzzSnapshot(
       tiktok: buzz.activePlatforms.includes('tiktok') ? Math.round(buzz.totalMentionsHour * 0.3) : 0,
       twitter: buzz.activePlatforms.includes('twitter') ? Math.round(buzz.totalMentionsHour * 0.2) : 0,
     },
-    topPost: buzz.topPost,
+    topPost: buzz.topPost ? {
+      platform: buzz.topPost.platform,
+      postUrl: buzz.topPost.postUrl,
+      engagement: buzz.topPost.engagement,
+      preview: buzz.topPost.content, // Map content to preview for schema compatibility
+    } : null,
     isLiveNow: buzz.liveNow,
     liveViewers: buzz.liveNow ? Math.round(Math.random() * 500 + 100) : 0,
     viralPostsCount: buzz.currentPulse > 80 ? Math.ceil(buzz.totalMentionsHour * 0.1) : 0,
