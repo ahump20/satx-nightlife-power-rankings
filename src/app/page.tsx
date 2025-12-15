@@ -2,12 +2,17 @@ import { TonightTopBar } from '@/components/TonightTopBar';
 import { TrendingMovers } from '@/components/TrendingMovers';
 import { ScoringExplainer } from '@/components/ScoringExplainer';
 import { YTDOverview } from '@/components/YearTimeline';
+import { HeroSection } from '@/components/HeroSection';
+import { CoverageArea } from '@/components/CoverageArea';
 import Link from 'next/link';
 import { ChevronRight, Trophy, MapPin } from 'lucide-react';
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-900 pb-20">
+      {/* Hero with rotating local photos */}
+      <HeroSection />
+
       {/* Tonight's Top Picks */}
       <TonightTopBar />
 
@@ -39,6 +44,9 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* Coverage Areas with Photos */}
+        <CoverageArea />
+
         {/* Trending Movers */}
         <section>
           <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
@@ -50,7 +58,7 @@ export default function Home() {
         {/* YTD Overview */}
         <section>
           <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-            📊 2024 YTD Leaders
+            📊 2025 YTD Leaders
           </h2>
           <YTDOverview />
         </section>
@@ -58,32 +66,6 @@ export default function Home() {
         {/* Scoring Explainer */}
         <section>
           <ScoringExplainer />
-        </section>
-
-        {/* Area info */}
-        <section className="bg-gray-800 rounded-xl p-4">
-          <h3 className="font-bold text-white mb-2">Coverage Area</h3>
-          <p className="text-sm text-gray-400 mb-3">
-            We track bars, breweries, and nightlife venues across the San Antonio
-            metro area with a focus on the NW side and Boerne.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {[
-              'The Rim',
-              'La Cantera',
-              'Stone Oak',
-              'The Pearl',
-              'Boerne',
-              'Dominion',
-            ].map((area) => (
-              <span
-                key={area}
-                className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded"
-              >
-                {area}
-              </span>
-            ))}
-          </div>
         </section>
       </div>
     </main>
