@@ -1,0 +1,20 @@
+{
+  "name": "satx-nightlife",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "deploy:api": "cd packages/api && pnpm run deploy",
+    "deploy:web": "cd packages/web && pnpm run deploy",
+    "deploy": "pnpm deploy:api && pnpm deploy:web",
+    "db:migrate": "cd packages/api && pnpm run db:migrate"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
