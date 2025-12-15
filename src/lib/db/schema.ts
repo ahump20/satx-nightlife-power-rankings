@@ -104,7 +104,105 @@ export interface ScoreBreakdown {
   proximityBonus: number;
   trendingBonus: number;
   expertBoost: number;
+  socialBuzzScore: number; // NEW: Real-time social media activity score
   totalWeightedScore: number;
+}
+
+// ============================================
+// SOCIAL MEDIA TRACKING SCHEMA
+// ============================================
+
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter';
+
+/**
+ * Social media profiles linked to venues
+ */
+export interface VenueSocialProfile {
+  id: string;
+  venueId: string;
+  platform: SocialPlatform;
+  handle: string;
+  profileUrl: string;
+  followerCount: number;
+  isVerified: boolean;
+  lastPostAt: Date | null;
+  avgEngagementRate: number;
+  linkedAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Individual social media mentions of a venue
+ */
+export interface SocialMention {
+  id: string;
+  venueId: string;
+  platform: SocialPlatform;
+  postId: string;
+  postUrl: string;
+  authorUsername: string;
+  authorFollowers: number;
+  content: string;
+  hashtags: string[];
+  likeCount: number;
+  commentCount: number;
+  shareCount: number;
+  viewCount: number | null;
+  mediaType: 'image' | 'video' | 'story' | 'reel' | 'text';
+  sentimentScore: number; // -1 to 1
+  engagementScore: number; // 0-100 normalized
+  isLive: boolean;
+  locationTagged: boolean;
+  postedAt: Date;
+  fetchedAt: Date;
+}
+
+/**
+ * Hourly activity pulse for venues
+ * Tracks real-time popularity every hour
+ */
+export interface HourlyActivityPulse {
+  id: string;
+  venueId: string;
+  hourTimestamp: Date; // Truncated to hour
+  platform: SocialPlatform | 'all';
+  mentionCount: number;
+  totalEngagement: number;
+  avgSentiment: number;
+  viralPostCount: number;
+  liveStreamCount: number;
+  uniquePosters: number;
+  topHashtags: string[];
+  pulseScore: number; // 0-100 activity score
+  createdAt: Date;
+}
+
+/**
+ * Real-time buzz snapshot for a venue
+ * Aggregated across all platforms
+ */
+export interface VenueBuzzSnapshot {
+  id: string;
+  venueId: string;
+  timestamp: Date;
+  currentPulse: number; // Real-time buzz score 0-100
+  hourlyTrend: 'exploding' | 'rising' | 'steady' | 'falling' | 'dead';
+  hourlyTrendPercent: number;
+  mentionsLastHour: number;
+  mentionsLast24h: number;
+  engagementLastHour: number;
+  avgSentiment: number;
+  platformBreakdown: Record<SocialPlatform, number>;
+  topPost: {
+    platform: SocialPlatform;
+    postUrl: string;
+    engagement: number;
+    preview: string;
+  } | null;
+  isLiveNow: boolean;
+  liveViewers: number;
+  viralPostsCount: number;
+  influencerMentions: number;
 }
 
 export interface Event {
@@ -292,6 +390,154 @@ $$ language 'plpgsql';
 
 CREATE TRIGGER update_venues_updated_at
   BEFORE UPDATE ON venues
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- SOCIAL MEDIA TRACKING TABLES
+-- ============================================
+
+-- Venue social media profiles
+CREATE TABLE IF NOT EXISTS venue_social_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  platform VARCHAR(20) NOT NULL CHECK (platform IN ('instagram', 'tiktok', 'twitter')),
+  handle VARCHAR(100) NOT NULL,
+  profile_url VARCHAR(500) NOT NULL,
+  follower_count INTEGER DEFAULT 0,
+  is_verified BOOLEAN DEFAULT FALSE,
+  last_post_at TIMESTAMPTZ,
+  avg_engagement_rate DECIMAL(5,4) DEFAULT 0,
+  linked_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(venue_id, platform)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_profiles_venue ON venue_social_profiles(venue_id);
+CREATE INDEX IF NOT EXISTS idx_social_profiles_platform ON venue_social_profiles(platform);
+
+-- Social media mentions
+CREATE TABLE IF NOT EXISTS social_mentions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  platform VARCHAR(20) NOT NULL CHECK (platform IN ('instagram', 'tiktok', 'twitter')),
+  post_id VARCHAR(100) NOT NULL,
+  post_url VARCHAR(1000) NOT NULL,
+  author_username VARCHAR(100) NOT NULL,
+  author_followers INTEGER DEFAULT 0,
+  content TEXT,
+  hashtags TEXT[] DEFAULT '{}',
+  like_count INTEGER DEFAULT 0,
+  comment_count INTEGER DEFAULT 0,
+  share_count INTEGER DEFAULT 0,
+  view_count INTEGER,
+  media_type VARCHAR(20) DEFAULT 'text',
+  sentiment_score DECIMAL(3,2) DEFAULT 0,
+  engagement_score DECIMAL(5,2) DEFAULT 0,
+  is_live BOOLEAN DEFAULT FALSE,
+  location_tagged BOOLEAN DEFAULT FALSE,
+  posted_at TIMESTAMPTZ NOT NULL,
+  fetched_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(platform, post_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mentions_venue ON social_mentions(venue_id);
+CREATE INDEX IF NOT EXISTS idx_mentions_platform ON social_mentions(platform);
+CREATE INDEX IF NOT EXISTS idx_mentions_posted ON social_mentions(posted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mentions_engagement ON social_mentions(engagement_score DESC);
+CREATE INDEX IF NOT EXISTS idx_mentions_venue_recent ON social_mentions(venue_id, posted_at DESC);
+
+-- Hourly activity pulse
+CREATE TABLE IF NOT EXISTS hourly_activity_pulse (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  hour_timestamp TIMESTAMPTZ NOT NULL,
+  platform VARCHAR(20) NOT NULL DEFAULT 'all',
+  mention_count INTEGER DEFAULT 0,
+  total_engagement INTEGER DEFAULT 0,
+  avg_sentiment DECIMAL(3,2) DEFAULT 0,
+  viral_post_count INTEGER DEFAULT 0,
+  live_stream_count INTEGER DEFAULT 0,
+  unique_posters INTEGER DEFAULT 0,
+  top_hashtags TEXT[] DEFAULT '{}',
+  pulse_score DECIMAL(5,2) DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(venue_id, hour_timestamp, platform)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pulse_venue ON hourly_activity_pulse(venue_id);
+CREATE INDEX IF NOT EXISTS idx_pulse_hour ON hourly_activity_pulse(hour_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_pulse_score ON hourly_activity_pulse(pulse_score DESC);
+CREATE INDEX IF NOT EXISTS idx_pulse_venue_recent ON hourly_activity_pulse(venue_id, hour_timestamp DESC);
+
+-- Real-time buzz snapshots (updated frequently)
+CREATE TABLE IF NOT EXISTS venue_buzz_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  current_pulse DECIMAL(5,2) DEFAULT 0,
+  hourly_trend VARCHAR(20) DEFAULT 'steady',
+  hourly_trend_percent DECIMAL(6,2) DEFAULT 0,
+  mentions_last_hour INTEGER DEFAULT 0,
+  mentions_last_24h INTEGER DEFAULT 0,
+  engagement_last_hour INTEGER DEFAULT 0,
+  avg_sentiment DECIMAL(3,2) DEFAULT 0,
+  platform_breakdown JSONB DEFAULT '{}',
+  top_post JSONB,
+  is_live_now BOOLEAN DEFAULT FALSE,
+  live_viewers INTEGER DEFAULT 0,
+  viral_posts_count INTEGER DEFAULT 0,
+  influencer_mentions INTEGER DEFAULT 0,
+  UNIQUE(venue_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_buzz_venue ON venue_buzz_snapshots(venue_id);
+CREATE INDEX IF NOT EXISTS idx_buzz_pulse ON venue_buzz_snapshots(current_pulse DESC);
+CREATE INDEX IF NOT EXISTS idx_buzz_live ON venue_buzz_snapshots(is_live_now) WHERE is_live_now = TRUE;
+
+-- Function to calculate pulse score from mentions
+CREATE OR REPLACE FUNCTION calculate_pulse_score(
+  mention_count INTEGER,
+  engagement INTEGER,
+  viral_count INTEGER,
+  live_count INTEGER,
+  hour_of_day INTEGER,
+  day_of_week INTEGER
+) RETURNS DECIMAL AS $$
+DECLARE
+  base_score DECIMAL;
+  time_multiplier DECIMAL;
+BEGIN
+  -- Base score from mentions and engagement
+  base_score := LEAST(100,
+    (mention_count * 5) +
+    (LOG(engagement + 1) * 10) +
+    (viral_count * 15) +
+    (live_count * 25)
+  );
+
+  -- Time multiplier (higher during peak hours)
+  IF day_of_week IN (5, 6) THEN -- Friday, Saturday
+    IF hour_of_day BETWEEN 21 AND 23 OR hour_of_day BETWEEN 0 AND 2 THEN
+      time_multiplier := 1.0; -- Expected peak
+    ELSE
+      time_multiplier := 1.5; -- Unexpected activity gets boost
+    END IF;
+  ELSE
+    IF hour_of_day BETWEEN 21 AND 23 THEN
+      time_multiplier := 1.2;
+    ELSE
+      time_multiplier := 1.8; -- Much bigger boost for off-peak activity
+    END IF;
+  END IF;
+
+  RETURN LEAST(100, base_score * time_multiplier);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to update venue_buzz_snapshots updated_at
+CREATE TRIGGER update_social_profiles_updated_at
+  BEFORE UPDATE ON venue_social_profiles
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 `;
