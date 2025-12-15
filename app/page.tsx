@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import useSWR from 'swr';
 import { getCurrentLocation, SATX_CENTER } from '@/lib/geolocation';
 import TonightBar from '@/components/TonightBar';
@@ -81,10 +82,18 @@ export default function Home() {
 
         {/* Monthly Rankings Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4 flex items-center">
-            <span className="mr-2">🏆</span>
-            Monthly Power Rankings
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold flex items-center">
+              <span className="mr-2">🏆</span>
+              Monthly Power Rankings
+            </h2>
+            <Link 
+              href="/timeline" 
+              className="px-4 py-2 bg-primary hover:bg-primary-dark rounded-lg font-semibold transition text-sm"
+            >
+              View Timeline →
+            </Link>
+          </div>
           <MonthlyRankings />
         </section>
 
