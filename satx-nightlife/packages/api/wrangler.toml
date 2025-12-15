@@ -1,0 +1,56 @@
+name = "satx-nightlife-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "satx-nightlife-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_CACHE_ID"
+
+[[kv_namespaces]]
+binding = "CONFIG"
+id = "YOUR_KV_CONFIG_ID"
+
+# R2 Buckets
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "satx-nightlife-storage"
+
+# Queues
+[[queues.producers]]
+binding = "INGEST_QUEUE"
+queue = "satx-ingest"
+
+[[queues.consumers]]
+queue = "satx-ingest"
+max_batch_size = 10
+max_batch_timeout = 30
+
+# Cron Triggers
+[triggers]
+crons = [
+  "0 * * * *",   # Hourly ingestion
+  "0 6 * * *",   # Daily rollup at 6 AM CT
+  "0 7 1 * *"   # Monthly snapshot on 1st at 7 AM CT
+]
+
+# Environment Variables (set via dashboard or .dev.vars)
+[vars]
+ENVIRONMENT = "development"
+DEFAULT_LAT = "29.5964"
+DEFAULT_LNG = "-98.6183"
+DEFAULT_RADIUS_MILES = "5"
+
+# Development overrides
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
