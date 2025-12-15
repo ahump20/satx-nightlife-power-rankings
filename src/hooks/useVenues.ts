@@ -133,7 +133,6 @@ export function useScoringMethodology() {
   return {
     weights: data?.weights || [],
     categories: data?.categories || {},
-    expertPicks: data?.expertPicks || [],
     methodology: data?.methodology,
     isLoading,
     error,

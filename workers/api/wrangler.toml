@@ -1,0 +1,35 @@
+# SATX Nightlife API Worker Configuration
+# Worker Name: satx-nightlife-api
+
+name = "satx-nightlife-api"
+main = "../../src/workers/api/index.ts"
+compatibility_date = "2025-03-07"
+compatibility_flags = ["nodejs_compat"]
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+
+# Optional KV Cache Binding
+# Uncomment and add your KV namespace ID to enable caching
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "YOUR_KV_NAMESPACE_ID"
+
+# Development overrides
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Staging overrides
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+# Routes (uncomment if using custom domain)
+# [routes]
+# pattern = "api.satxnightlife.app/*"
+# zone_name = "satxnightlife.app"

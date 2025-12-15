@@ -26,8 +26,8 @@ export const MOCK_VENUES: (Venue & {
     website: 'https://www.georgeskeep.com',
     imageUrl: '/venues/georges-keep.jpg',
     priceLevel: 3,
-    isExpertPick: true,
-    expertBoostMultiplier: 1.15,
+    isExpertPick: false,
+    expertBoostMultiplier: 1.0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date(),
     ratings: [
@@ -94,8 +94,8 @@ export const MOCK_VENUES: (Venue & {
     website: 'https://camp1604.com',
     imageUrl: '/venues/camp-1604.jpg',
     priceLevel: 2,
-    isExpertPick: true,
-    expertBoostMultiplier: 1.12,
+    isExpertPick: false,
+    expertBoostMultiplier: 1.0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date(),
     ratings: [
@@ -177,8 +177,8 @@ export const MOCK_VENUES: (Venue & {
     website: null,
     imageUrl: '/venues/kung-fu-noodle.jpg',
     priceLevel: 1,
-    isExpertPick: true,
-    expertBoostMultiplier: 1.10,
+    isExpertPick: false,
+    expertBoostMultiplier: 1.0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date(),
     ratings: [
@@ -227,8 +227,8 @@ export const MOCK_VENUES: (Venue & {
     website: 'https://thevenueboerne.com',
     imageUrl: '/venues/the-venue.jpg',
     priceLevel: 2,
-    isExpertPick: true,
-    expertBoostMultiplier: 1.10,
+    isExpertPick: false,
+    expertBoostMultiplier: 1.0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date(),
     ratings: [

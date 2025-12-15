@@ -6,7 +6,7 @@ import { Info, ChevronDown, ChevronUp, Star, Scale } from 'lucide-react';
 
 export function ScoringExplainer() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { weights, categories, expertPicks, methodology, isLoading } = useScoringMethodology();
+  const { weights, categories, methodology, isLoading } = useScoringMethodology();
 
   if (isLoading) {
     return (
@@ -89,37 +89,17 @@ export function ScoringExplainer() {
             ))}
           </div>
 
-          {/* Expert picks */}
-          {expertPicks.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2 flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-500" />
-                Expert Picks
-              </h4>
-              <p className="text-xs text-gray-500 mb-3">
-                These venues receive a scoring boost based on expert curation.
-                Boosts are multiplicative and transparent.
-              </p>
-              <div className="grid md:grid-cols-2 gap-2">
-                {expertPicks.map((pick: any) => (
-                  <div
-                    key={pick.slug}
-                    className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-white capitalize">
-                        {pick.slug.replace(/-/g, ' ')}
-                      </span>
-                      <span className="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded">
-                        +{pick.boostPercentage}%
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400">{pick.reason}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* No bias notice */}
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+            <h4 className="text-sm font-semibold text-green-400 mb-2">
+              100% Data-Driven Rankings
+            </h4>
+            <p className="text-xs text-gray-400">
+              No expert picks or arbitrary boosts. Every venue is scored purely
+              on aggregated ratings from verified sources. The algorithm treats
+              all venues equally.
+            </p>
+          </div>
 
           {/* Data sources */}
           <div className="border-t border-gray-700 pt-4">
@@ -136,8 +116,8 @@ export function ScoringExplainer() {
               <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
                 Internal Deals DB
               </span>
-              <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
-                Expert Curation
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
+                No Paid Placements
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-2">

@@ -1,11 +1,11 @@
 {
-  "name": "SATX Nightlife Power Rankings",
+  "name": "SATX Nightlife",
   "short_name": "SATX Nightlife",
-  "description": "Transparent, data-driven rankings for San Antonio NW & Boerne nightlife venues",
+  "description": "Research-backed nightlife rankings for San Antonio, Boerne & New Braunfels. Real ratings from locals, no bias.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#1f1f23",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

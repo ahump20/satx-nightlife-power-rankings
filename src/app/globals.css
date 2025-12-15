@@ -1,6 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 
+/* ============================================
+   SATX NIGHTLIFE POWER RANKINGS
+   "Hill Country Modern" Design System
+   ============================================ */
+
 :root {
   /* Primary palette - Midnight tones */
   --midnight: #0a0a0a;
@@ -12,8 +17,10 @@
   /* Accent palette - Hill Country warmth */
   --copper: #b87333;
   --copper-light: #d4956b;
+  --copper-glow: rgba(184, 115, 51, 0.4);
   --amber: #d4a574;
   --bronze: #8b6914;
+  --gold: #c9a227;
 
   /* Text palette */
   --cream: #f5f0e8;
@@ -22,6 +29,7 @@
 
   /* Status colors */
   --live: #22c55e;
+  --live-glow: rgba(34, 197, 94, 0.3);
   --busy: #f59e0b;
   --closed: #6b7280;
   --error: #ef4444;
@@ -43,17 +51,26 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(184, 115, 51, 0.15);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px var(--copper-glow);
+  --shadow-glow-sm: 0 0 15px var(--copper-glow);
+  --shadow-live-glow: 0 0 20px var(--live-glow);
+
+  /* 3D Transform perspective */
+  --perspective: 1000px;
+  --tilt-max: 8deg;
 }
 
 @theme inline {
@@ -65,6 +82,10 @@
   --font-display: 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
+
+/* ============================================
+   BASE RESET & DEFAULTS
+   ============================================ */
 
 * {
   box-sizing: border-box;
@@ -87,9 +108,13 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overscroll-behavior: none;
+  overflow-x: hidden;
 }
 
-/* Typography */
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
 .font-display {
   font-family: 'Playfair Display', Georgia, serif;
 }
@@ -117,7 +142,10 @@ h4 { font-size: 1.125rem; }
   h3 { font-size: 1.5rem; }
 }
 
-/* Links */
+/* ============================================
+   LINKS & INTERACTIONS
+   ============================================ */
+
 a {
   color: var(--copper);
   text-decoration: none;
@@ -132,19 +160,20 @@ a:active {
   opacity: 0.8;
 }
 
-/* Focus states */
 :focus-visible {
   outline: 2px solid var(--copper);
   outline-offset: 2px;
 }
 
-/* Selection */
 ::selection {
   background-color: var(--copper);
   color: var(--midnight);
 }
 
-/* Scrollbar styling */
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -155,15 +184,14 @@ a:active {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--slate);
+  background: linear-gradient(180deg, var(--copper) 0%, var(--bronze) 100%);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--stone);
+  background: linear-gradient(180deg, var(--copper-light) 0%, var(--copper) 100%);
 }
 
-/* Hide scrollbar utilities */
 .scrollbar-hide,
 .no-scrollbar {
   -ms-overflow-style: none;
@@ -175,32 +203,114 @@ a:active {
   display: none;
 }
 
-/* Glass morphism effect */
+/* ============================================
+   GLASS MORPHISM
+   ============================================ */
+
 .glass {
   background: rgba(26, 26, 26, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Card base */
+.glass-card {
+  background: rgba(26, 26, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   CARD SYSTEM - 3D EFFECTS
+   ============================================ */
+
 .card {
   background: var(--charcoal);
   border-radius: var(--radius-lg);
   border: 1px solid var(--slate);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+  border-color: rgba(184, 115, 51, 0.3);
 }
 
-/* Status badges */
+/* 3D Tilt Card */
+.card-3d {
+  perspective: var(--perspective);
+}
+
+.card-3d-inner {
+  transform-style: preserve-3d;
+  transition: transform var(--transition-base);
+}
+
+.card-tilt {
+  --rotateX: 0deg;
+  --rotateY: 0deg;
+  transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(var(--rotateY));
+  transition: transform var(--transition-fast);
+}
+
+.card-tilt:hover {
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px var(--copper-glow);
+}
+
+/* Card with glow effect */
+.card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    var(--copper-glow) 50%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  border-radius: inherit;
+  z-index: -1;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+
 .status-live {
   background: rgba(34, 197, 94, 0.12);
   color: var(--live);
   border: 1px solid rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.15);
+}
+
+.status-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--live);
+  border-radius: 50%;
+  animation: pulse-live 2s ease-in-out infinite;
+  margin-right: 6px;
 }
 
 .status-busy {
@@ -215,7 +325,10 @@ a:active {
   border: 1px solid rgba(107, 114, 128, 0.25);
 }
 
-/* Color utilities */
+/* ============================================
+   COLOR UTILITIES
+   ============================================ */
+
 .text-copper { color: var(--copper); }
 .text-amber { color: var(--amber); }
 .text-cream { color: var(--cream); }
@@ -228,7 +341,10 @@ a:active {
 .border-slate { border-color: var(--slate); }
 .border-copper { border-color: var(--copper); }
 
-/* Button styles */
+/* ============================================
+   BUTTON SYSTEM
+   ============================================ */
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -242,19 +358,41 @@ a:active {
   cursor: pointer;
   border: none;
   min-height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.btn:hover::after {
+  opacity: 1;
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-primary {
-  background: var(--copper);
+  background: linear-gradient(135deg, var(--copper) 0%, var(--bronze) 100%);
   color: var(--midnight);
+  box-shadow: var(--shadow-sm), 0 0 20px var(--copper-glow);
 }
 
 .btn-primary:hover {
-  background: var(--copper-light);
+  background: linear-gradient(135deg, var(--copper-light) 0%, var(--copper) 100%);
+  box-shadow: var(--shadow-md), 0 0 30px var(--copper-glow);
 }
 
 .btn-secondary {
@@ -265,6 +403,7 @@ a:active {
 
 .btn-secondary:hover {
   background: var(--stone);
+  border-color: var(--copper);
 }
 
 .btn-ghost {
@@ -276,23 +415,21 @@ a:active {
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Image handling */
-.img-cover {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
+/* ============================================
+   GRADIENT OVERLAYS
+   ============================================ */
 
-/* Gradient overlays */
 .gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(10, 10, 10, 0.95) 0%,
-    rgba(10, 10, 10, 0.5) 50%,
+    rgba(10, 10, 10, 0.98) 0%,
+    rgba(10, 10, 10, 0.7) 30%,
+    rgba(10, 10, 10, 0.3) 60%,
     transparent 100%
   );
+  pointer-events: none;
 }
 
 .gradient-overlay-light {
@@ -300,13 +437,32 @@ a:active {
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(10, 10, 10, 0.8) 0%,
-    rgba(10, 10, 10, 0.3) 40%,
+    rgba(10, 10, 10, 0.9) 0%,
+    rgba(10, 10, 10, 0.4) 40%,
     transparent 100%
+  );
+  pointer-events: none;
+}
+
+.gradient-radial {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(184, 115, 51, 0.15) 0%,
+    transparent 50%
   );
 }
 
-/* Container */
+.gradient-hero {
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(184, 115, 51, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 20%, rgba(212, 165, 116, 0.1) 0%, transparent 40%),
+    linear-gradient(to bottom, transparent 0%, rgba(10, 10, 10, 0.8) 100%);
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
 .container {
   width: 100%;
   max-width: 1280px;
@@ -322,7 +478,10 @@ a:active {
   .container { padding: 0 2rem; }
 }
 
-/* Safe area insets */
+/* ============================================
+   SAFE AREA INSETS
+   ============================================ */
+
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
 }
@@ -335,61 +494,418 @@ a:active {
   padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0));
 }
 
-/* Touch targets */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ============================================
+   HERO SECTION EFFECTS
+   ============================================ */
+
+.hero-parallax {
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.hero-parallax-bg {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-1px) scale(1.5);
+  z-index: -1;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.hero-image {
+  transition: transform 0.3s ease-out;
+  will-change: transform;
 }
 
-.animate-fade-in {
-  animation: fadeIn var(--transition-slow) ease forwards;
+/* Animated gradient background */
+.hero-gradient-animated {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(125deg,
+      rgba(184, 115, 51, 0.15) 0%,
+      transparent 25%,
+      transparent 75%,
+      rgba(212, 165, 116, 0.1) 100%
+    );
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease-in-out infinite;
 }
 
-.animate-slide-up {
-  animation: slideUp var(--transition-slow) ease forwards;
+/* Particle/light effect overlay */
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, var(--copper-light) 0%, transparent 50%),
+    radial-gradient(2px 2px at 40% 70%, var(--amber) 0%, transparent 50%),
+    radial-gradient(1px 1px at 60% 20%, var(--cream) 0%, transparent 50%),
+    radial-gradient(2px 2px at 80% 50%, var(--copper) 0%, transparent 50%),
+    radial-gradient(1px 1px at 30% 80%, var(--ivory) 0%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 70% 90%, var(--copper-light) 0%, transparent 50%);
+  background-size: 100% 100%;
+  animation: particle-float 15s ease-in-out infinite;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 40%,
+    rgba(10, 10, 10, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================
+   PARALLAX UTILITIES
+   ============================================ */
+
+.parallax-wrapper {
+  perspective: 1px;
+  perspective-origin: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.parallax-layer-back {
+  transform: translateZ(-2px) scale(3);
+}
+
+.parallax-layer-mid {
+  transform: translateZ(-1px) scale(2);
+}
+
+.parallax-layer-front {
+  transform: translateZ(0);
+}
+
+/* ============================================
+   SCORE GAUGE ENHANCEMENTS
+   ============================================ */
+
+.score-gauge {
+  position: relative;
+}
+
+.score-gauge-ring {
+  filter: drop-shadow(0 0 8px var(--copper-glow));
+}
+
+.score-gauge-gradient {
+  stroke: url(#scoreGradient);
+}
+
+.score-gauge-glow {
+  filter: drop-shadow(0 0 6px var(--copper-glow));
+}
+
+.score-gauge-animated {
+  animation: gauge-fill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  stroke-dashoffset: var(--circumference) !important;
+}
+
+.score-gauge-animated.visible {
+  stroke-dashoffset: var(--target-offset) !important;
+}
+
+/* ============================================
+   IMAGE EFFECTS
+   ============================================ */
+
+.img-cover {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.img-zoom {
+  transition: transform var(--transition-slow);
+}
+
+.img-zoom:hover,
+.group:hover .img-zoom {
+  transform: scale(1.08);
+}
+
+.img-ken-burns {
+  animation: ken-burns 20s ease-in-out infinite alternate;
+}
+
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--charcoal) 0%,
+    var(--slate) 50%,
+    var(--charcoal) 100%
+  );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
 }
 
-/* Stagger delays */
-.stagger-1 { animation-delay: 50ms; }
-.stagger-2 { animation-delay: 100ms; }
-.stagger-3 { animation-delay: 150ms; }
-.stagger-4 { animation-delay: 200ms; }
-.stagger-5 { animation-delay: 250ms; }
-
-/* Overscroll behavior */
-html, body {
-  overscroll-behavior-y: contain;
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
 }
 
-/* Rank badge */
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  height: 200px;
+}
+
+/* ============================================
+   PAGE TRANSITIONS
+   ============================================ */
+
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--transition-slow),
+    transform var(--transition-slow);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity var(--transition-base),
+    transform var(--transition-base);
+}
+
+/* Fade transitions */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity var(--transition-slow);
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+/* ============================================
+   STAGGERED LIST ANIMATIONS
+   ============================================ */
+
+.stagger-list > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: stagger-in var(--transition-slow) ease forwards;
+}
+
+.stagger-list > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-list > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-list > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-list > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-list > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-list > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-list > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-list > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-list > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-list > *:nth-child(10) { animation-delay: 450ms; }
+
+/* ============================================
+   SCROLL-TRIGGERED ANIMATIONS
+   ============================================ */
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ============================================
+   MOBILE-SPECIFIC EFFECTS
+   ============================================ */
+
+/* Pull to refresh indicator */
+.pull-refresh {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  padding: 1rem;
+  transition: transform 0.3s ease;
+  z-index: 100;
+}
+
+.pull-refresh.active {
+  transform: translateX(-50%) translateY(0);
+}
+
+.pull-refresh-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--slate);
+  border-top-color: var(--copper);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Bottom sheet */
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--charcoal);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+
+.bottom-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--stone);
+  border-radius: 2px;
+  margin: 12px auto;
+}
+
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+  z-index: 49;
+}
+
+.bottom-sheet-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Touch ripple effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
+    rgba(184, 115, 51, 0.3) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    transform 0.5s ease-out,
+    opacity 0.5s ease-out;
+  pointer-events: none;
+}
+
+.ripple:active::after {
+  opacity: 1;
+  transform: scale(2);
+}
+
+/* ============================================
+   RANK BADGE
+   ============================================ */
+
 .rank-badge {
   display: inline-flex;
   align-items: center;
@@ -399,9 +915,23 @@ html, body {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
   font-size: 0.875rem;
-  background: var(--copper);
+  background: linear-gradient(135deg, var(--copper) 0%, var(--bronze) 100%);
   color: var(--midnight);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm), 0 0 10px var(--copper-glow);
+  position: relative;
+}
+
+.rank-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 50%
+  );
+  border-radius: inherit;
 }
 
 .rank-badge-lg {
@@ -410,9 +940,285 @@ html, body {
   font-size: 1rem;
 }
 
-/* Score display */
+.rank-badge-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+}
+
+/* Top 3 special styling */
+.rank-badge-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.rank-badge-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+  box-shadow: 0 0 12px rgba(192, 192, 192, 0.3);
+}
+
+.rank-badge-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%);
+  box-shadow: 0 0 12px rgba(205, 127, 50, 0.3);
+}
+
+/* ============================================
+   SCORE DISPLAY
+   ============================================ */
+
 .score-display {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 500;
   color: var(--ivory);
+}
+
+.score-display-glow {
+  text-shadow: 0 0 20px var(--copper-glow);
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes stagger-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(-2%, -1%);
+  }
+}
+
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: var(--circumference);
+  }
+  to {
+    stroke-dashoffset: var(--target-offset);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px var(--copper-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--copper-glow));
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(25deg);
+  }
+}
+
+/* ============================================
+   ANIMATION UTILITIES
+   ============================================ */
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-slow) ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-slow) ease forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown var(--transition-slow) ease forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.animate-pulse-glow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Stagger delays */
+.delay-75 { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-particles,
+  .hero-gradient-animated,
+  .img-ken-burns {
+    animation: none !important;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal-left,
+  .scroll-reveal-right,
+  .scroll-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   OVERSCROLL BEHAVIOR
+   ============================================ */
+
+html, body {
+  overscroll-behavior-y: contain;
+}
+
+/* ============================================
+   NOISE TEXTURE OVERLAY
+   ============================================ */
+
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   SHIMMER HIGHLIGHT EFFECT
+   ============================================ */
+
+.shimmer-highlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: shimmer-sweep 3s ease-in-out infinite;
+  pointer-events: none;
 }

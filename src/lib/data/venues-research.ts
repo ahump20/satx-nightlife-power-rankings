@@ -6,7 +6,7 @@ export interface Venue {
   slug: string;
   name: string;
   type: 'cocktail-bar' | 'brewery' | 'dive-bar' | 'rooftop' | 'speakeasy' | 'dance-hall' | 'sports-bar' | 'wine-bar' | 'irish-pub' | 'tiki-bar';
-  area: 'river-walk' | 'pearl' | 'southtown' | 'stone-oak' | 'la-cantera' | 'the-rim' | 'boerne' | 'new-braunfels' | 'downtown';
+  area: 'river-walk' | 'pearl' | 'southtown' | 'stone-oak' | 'la-cantera' | 'the-rim' | 'boerne' | 'new-braunfels' | 'downtown' | 'st-marys-strip';
   address: string;
   coordinates: { lat: number; lng: number };
   phone?: string;
@@ -690,6 +690,183 @@ export const VENUES: Venue[] = [
     ],
     features: ['Arcade games', 'Patio', 'DJ entertainment', 'Late night'],
     priceLevel: 2
+  },
+
+  // === ADDITIONAL SAN ANTONIO VENUES ===
+  {
+    id: 'bonham-exchange',
+    slug: 'bonham-exchange',
+    name: 'The Bonham Exchange',
+    type: 'dance-hall',
+    area: 'downtown',
+    address: '411 Bonham St, San Antonio, TX 78205',
+    coordinates: { lat: 29.4268, lng: -98.4847 },
+    website: 'https://bonhamexchange.com',
+    ratings: { google: 4.3, yelp: 4.0 },
+    reviewCount: 1800,
+    score: calculateScore({ google: 4.3, yelp: 4.0 }, 1800),
+    description: 'Legendary 25,000 sq ft dance club since 1981. Three levels with multiple DJs playing house, EDM, Latin, and hip-hop. San Antonio Current\'s Best Dance Club 8 years running.',
+    established: 1981,
+    notable: ['Best Dance Club winner', '3 levels', 'Historic 1891 building', 'Massive patio'],
+    hours: {
+      'Wed-Thu': '8pm-2am',
+      'Fri-Sat': '8pm-3am',
+      'Sun': '3pm-2am',
+      'Mon-Tue': 'Closed'
+    },
+    photos: [
+      { url: 'https://bonhamexchange.com/club-interior.jpg', source: 'website', alt: 'Bonham Exchange multi-level dance floor' }
+    ],
+    features: ['Dance club', 'Multiple DJs', '10+ bar stations', 'Light shows', 'Drag shows'],
+    priceLevel: 2
+  },
+  {
+    id: 'friendly-spot',
+    slug: 'friendly-spot',
+    name: 'The Friendly Spot Ice House',
+    type: 'brewery',
+    area: 'southtown',
+    address: '943 S Alamo St, San Antonio, TX 78205',
+    coordinates: { lat: 29.4145, lng: -98.4901 },
+    website: 'https://thefriendlyspot.com',
+    ratings: { google: 4.5, yelp: 4.0, tripadvisor: 4.5 },
+    reviewCount: 2400,
+    score: calculateScore({ google: 4.5, yelp: 4.0, tripadvisor: 4.5 }, 2400),
+    description: 'Reimagined Texas Ice House since 2009, serving 76 beers on tap and 300+ bottles. Family and dog-friendly outdoor venue in the heart of Southtown.',
+    established: 2009,
+    notable: ['76 taps', '300+ bottles', 'Dog-friendly', 'Family-friendly'],
+    hours: {
+      'Daily': '12pm-12am'
+    },
+    photos: [
+      { url: 'https://thefriendlyspot.com/outdoor-patio.jpg', source: 'website', alt: 'The Friendly Spot outdoor beer garden' }
+    ],
+    features: ['Beer garden', 'Craft beer', 'Outdoor seating', 'Food menu', 'Pet-friendly'],
+    priceLevel: 2
+  },
+  {
+    id: 'bar-1919',
+    slug: 'bar-1919',
+    name: 'Bar 1919',
+    type: 'speakeasy',
+    area: 'southtown',
+    address: '1420 S Alamo St, San Antonio, TX 78210',
+    coordinates: { lat: 29.4095, lng: -98.4912 },
+    website: 'https://bar1919.com',
+    ratings: { google: 4.6, yelp: 4.5 },
+    reviewCount: 1100,
+    score: calculateScore({ google: 4.6, yelp: 4.5 }, 1100),
+    description: 'Prohibition-era speakeasy in the Blue Star Complex with the largest whiskey collection in Texas. Award-winning mixology in an intimate, dark setting.',
+    established: 2012,
+    notable: ['Largest whiskey selection in TX', 'Speakeasy atmosphere', 'Blue Star Complex'],
+    hours: {
+      'Tue-Fri': '4pm-2am',
+      'Sat-Sun': '12pm-2am',
+      'Mon': 'Closed'
+    },
+    photos: [
+      { url: 'https://bar1919.com/backbar.jpg', source: 'website', alt: 'Bar 1919 extensive whiskey collection' }
+    ],
+    features: ['Speakeasy', 'Whiskey bar', 'Craft cocktails', 'Award-winning mixology'],
+    priceLevel: 3
+  },
+  {
+    id: 'bang-bang-bar',
+    slug: 'bang-bang-bar',
+    name: 'The Bang Bang Bar',
+    type: 'dive-bar',
+    area: 'downtown',
+    address: '119 El Mio St, San Antonio, TX 78216',
+    coordinates: { lat: 29.4612, lng: -98.4823 },
+    website: 'https://thebangbangbartx.com',
+    ratings: { google: 4.4, yelp: 4.0 },
+    reviewCount: 580,
+    score: calculateScore({ google: 4.4, yelp: 4.0 }, 580),
+    description: 'Vinyl-spinning, cocktail-slinging vintage dive bar inspired by Twin Peaks. Game room with pinball, pool, darts, and Skee-Ball. Live music and karaoke nights.',
+    established: 2016,
+    notable: ['Twin Peaks inspired', 'Vinyl records', 'Game room', 'Karaoke nights'],
+    hours: {
+      'Daily': '12pm-2am'
+    },
+    photos: [
+      { url: 'https://thebangbangbartx.com/bar-interior.jpg', source: 'website', alt: 'The Bang Bang Bar vintage dive interior' }
+    ],
+    features: ['Dive bar', 'Live music', 'Arcade games', 'Pool table', 'Karaoke'],
+    priceLevel: 1
+  },
+  {
+    id: 'hoppy-monk',
+    slug: 'hoppy-monk',
+    name: 'The Hoppy Monk',
+    type: 'brewery',
+    area: 'stone-oak',
+    address: '1010 N Loop 1604 E, San Antonio, TX 78232',
+    coordinates: { lat: 29.5891, lng: -98.4234 },
+    website: 'https://thehoppymonk.com',
+    ratings: { google: 4.5, yelp: 4.0 },
+    reviewCount: 1650,
+    score: calculateScore({ google: 4.5, yelp: 4.0 }, 1650),
+    description: 'Upbeat gastropub with 99 beers on tap and extensive spirits selection. Elevated pub food from locally sourced ingredients. 21+ after 7PM.',
+    notable: ['99 beers on tap', 'Gastropub', 'Locally sourced food'],
+    hours: {
+      'Mon-Thu': '11am-10pm',
+      'Fri-Sat': '11am-11pm',
+      'Sun': '11am-9pm'
+    },
+    photos: [
+      { url: 'https://thehoppymonk.com/taproom.jpg', source: 'website', alt: 'The Hoppy Monk tap wall' }
+    ],
+    features: ['Craft beer', 'Gastropub', 'Outdoor patio', '99 taps'],
+    priceLevel: 2
+  },
+  {
+    id: 'sanchos',
+    slug: 'sanchos',
+    name: 'Sanchos Cantina & Cocina',
+    type: 'dive-bar',
+    area: 'downtown',
+    address: '628 Jackson St, San Antonio, TX 78212',
+    coordinates: { lat: 29.4456, lng: -98.4867 },
+    ratings: { google: 4.4, yelp: 4.0 },
+    reviewCount: 980,
+    score: calculateScore({ google: 4.4, yelp: 4.0 }, 980),
+    description: 'Creative Mexican cantina in a 100-year-old converted home. Live jazz, rooftop with downtown views, and famous frozen margaritas.',
+    established: 2015,
+    notable: ['Rooftop bar', 'Live jazz', 'Famous margaritas', 'Historic building'],
+    hours: {
+      'Daily': '11am-1am'
+    },
+    photos: [
+      { url: 'https://yelp.com/bphoto/sanchos-rooftop.jpg', source: 'yelp', alt: 'Sanchos rooftop with downtown view' }
+    ],
+    features: ['Live music', 'Rooftop', 'Mexican food', 'Margaritas'],
+    priceLevel: 2
+  },
+  {
+    id: 'midnight-swim',
+    slug: 'midnight-swim',
+    name: 'Midnight Swim',
+    type: 'cocktail-bar',
+    area: 'st-marys-strip',
+    address: '2403 N St Mary\'s St, San Antonio, TX 78212',
+    coordinates: { lat: 29.4523, lng: -98.4834 },
+    instagramHandle: 'midnightswim210',
+    ratings: { google: 4.5, yelp: 4.5 },
+    reviewCount: 480,
+    score: calculateScore({ google: 4.5, yelp: 4.5 }, 480),
+    description: 'Late-night cocktail bar on St. Mary\'s Strip with eclectic Mexican flavors and delicious late-night brunch menu. Vibrant atmosphere with 35K Instagram following.',
+    established: 2019,
+    notable: ['St. Mary\'s Strip', 'Late night brunch', 'Mexican-inspired cocktails'],
+    hours: {
+      'Wed-Fri': '8pm-2am',
+      'Sat-Sun': '6pm-2am',
+      'Mon-Tue': 'Closed'
+    },
+    photos: [
+      { url: 'https://yelp.com/bphoto/midnight-swim.jpg', source: 'yelp', alt: 'Midnight Swim bar interior' }
+    ],
+    features: ['Late night', 'Craft cocktails', 'Mexican cuisine', 'St. Mary\'s Strip'],
+    priceLevel: 2
   }
 ];
 
@@ -724,7 +901,8 @@ export function getAreaDisplayName(area: Venue['area']): string {
     'the-rim': 'The Rim',
     'boerne': 'Boerne',
     'new-braunfels': 'New Braunfels',
-    'downtown': 'Downtown SA'
+    'downtown': 'Downtown SA',
+    'st-marys-strip': 'St. Mary\'s Strip'
   };
   return names[area];
 }

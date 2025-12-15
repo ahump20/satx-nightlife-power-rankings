@@ -23,9 +23,8 @@ export const SCORING_WEIGHTS = {
   proximity: 0.10,         // Distance from user (decays with distance)
   openNow: 0.05,           // Currently open bonus
 
-  // Expert & Trending (20% total)
-  expertPick: 0.10,        // Curated expert recommendations
-  trendingMomentum: 0.10,  // Week-over-week ranking change
+  // Trending (20% total) - No expert picks, pure data
+  trendingMomentum: 0.20,  // Week-over-week ranking change (increased since no expert boost)
 } as const;
 
 /**
@@ -87,7 +86,7 @@ export function calculatePowerScore(input: ScoringInput): ScoringResult {
     breakdown.socialBuzzScore = 50;
   }
 
-  // Calculate weighted score before expert boost
+  // Calculate weighted score - pure data, no expert boosts
   const baseScore =
     (breakdown.googleRatingScore * SCORING_WEIGHTS.googleRating) +
     (breakdown.yelpRatingScore * SCORING_WEIGHTS.yelpRating) +
@@ -99,15 +98,9 @@ export function calculatePowerScore(input: ScoringInput): ScoringResult {
     (input.isOpenNow ? 100 * SCORING_WEIGHTS.openNow : 0) +
     (input.hasEventTonight ? 100 * SCORING_WEIGHTS.eventsTonight : 0);
 
-  // 7. Apply Expert Boost (multiplicative, transparent)
-  const expertConfig = input.venueSlug ? EXPERT_PICKS[input.venueSlug] : null;
-  if (expertConfig || input.expertBoostMultiplier > 1) {
-    const boost = expertConfig?.boost || input.expertBoostMultiplier;
-    breakdown.expertBoost = (boost - 1) * 100; // Convert to percentage display
-    breakdown.totalWeightedScore = baseScore * boost;
-  } else {
-    breakdown.totalWeightedScore = baseScore;
-  }
+  // No expert boost - rankings are purely data-driven
+  breakdown.expertBoost = 0;
+  breakdown.totalWeightedScore = baseScore;
 
   return {
     powerScore: Math.round(breakdown.totalWeightedScore * 10) / 10,
@@ -229,14 +222,7 @@ function generateScoreExplanation(
     parts.push('Active on social');
   }
 
-  if (breakdown.expertBoost > 0) {
-    const expertConfig = input.venueSlug ? EXPERT_PICKS[input.venueSlug] : null;
-    if (expertConfig) {
-      parts.push(`Expert pick: ${expertConfig.reason}`);
-    } else {
-      parts.push('Expert recommended');
-    }
-  }
+  // No expert picks - rankings are purely data-driven
 
   return parts.length > 0 ? parts.join(' • ') : 'Solid local option';
 }
@@ -285,11 +271,6 @@ export function getWeightExplanation(): WeightExplanation[] {
       name: 'Open Now',
       weight: SCORING_WEIGHTS.openNow,
       description: 'Bonus for venues currently open',
-    },
-    {
-      name: 'Expert Pick',
-      weight: SCORING_WEIGHTS.expertPick,
-      description: 'Curated recommendations from local experts',
     },
     {
       name: 'Trending',

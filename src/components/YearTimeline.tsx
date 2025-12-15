@@ -136,48 +136,25 @@ export function YearTimeline({ slug }: YearTimelineProps) {
   );
 }
 
-// Standalone YTD Overview for dashboard
+// Standalone YTD Overview for dashboard - Data-driven, no hardcoded venues
 export function YTDOverview() {
+  // This component now displays a placeholder until real API data is available
+  // Rankings are computed from aggregated ratings - no manual curation
   return (
     <div className="bg-gray-800 rounded-xl p-4">
       <h3 className="text-lg font-bold text-white mb-4">2024 YTD Leaders</h3>
 
-      <div className="space-y-3">
-        {[
-          { name: "George's Keep", avgRank: 1.5, bestRank: 1, trend: 'up' },
-          { name: 'Camp 1604', avgRank: 2.7, bestRank: 2, trend: 'up' },
-          { name: 'The Venue', avgRank: 4.0, bestRank: 4, trend: 'same' },
-          { name: 'Kung Fu Noodle', avgRank: 5.2, bestRank: 3, trend: 'up' },
-          { name: 'The Brass Tap', avgRank: 6.5, bestRank: 5, trend: 'down' },
-        ].map((venue, idx) => (
-          <div
-            key={venue.name}
-            className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-bold text-purple-400">
-                #{idx + 1}
-              </span>
-              <div>
-                <h4 className="font-medium text-white">{venue.name}</h4>
-                <p className="text-xs text-gray-400">
-                  Avg: #{venue.avgRank} • Best: #{venue.bestRank}
-                </p>
-              </div>
-            </div>
-            <div
-              className={`text-sm ${
-                venue.trend === 'up'
-                  ? 'text-green-400'
-                  : venue.trend === 'down'
-                  ? 'text-red-400'
-                  : 'text-gray-400'
-              }`}
-            >
-              {venue.trend === 'up' ? '↑' : venue.trend === 'down' ? '↓' : '—'}
-            </div>
-          </div>
-        ))}
+      <div className="bg-gray-700/30 rounded-lg p-4 text-center">
+        <p className="text-gray-400 text-sm">
+          YTD rankings are calculated from aggregated Google, Yelp, and TripAdvisor
+          ratings. Check the Rankings page for current standings.
+        </p>
+        <a
+          href="/rankings"
+          className="inline-block mt-3 text-purple-400 hover:text-purple-300 text-sm font-medium"
+        >
+          View Full Rankings →
+        </a>
       </div>
     </div>
   );

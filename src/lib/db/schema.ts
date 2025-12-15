@@ -230,25 +230,9 @@ export type EventType =
   | 'holiday'
   | 'sports';
 
-// Expert-picked venues with boost configuration
-export const EXPERT_PICKS: Record<string, { boost: number; reason: string }> = {
-  'georges-keep': {
-    boost: 1.15,
-    reason: 'Award-winning craft cocktail bar with innovative seasonal menus'
-  },
-  'camp-1604': {
-    boost: 1.12,
-    reason: 'Premier NW SA destination with excellent food and drinks'
-  },
-  'kung-fu-noodle': {
-    boost: 1.10,
-    reason: 'Unique late-night spot with authentic atmosphere'
-  },
-  'the-venue': {
-    boost: 1.10,
-    reason: 'Top Boerne nightlife destination with live entertainment'
-  }
-};
+// Expert picks removed - all venues are ranked purely on data
+// Rankings are based solely on aggregated ratings from Google, Yelp, and TripAdvisor
+export const EXPERT_PICKS: Record<string, { boost: number; reason: string }> = {};
 
 // San Antonio NW / Boerne area bounds
 export const SATX_NW_BOUNDS = {

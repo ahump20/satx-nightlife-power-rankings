@@ -83,47 +83,15 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Expert picks */}
-        <div className="bg-gradient-to-br from-yellow-900/30 to-gray-800 rounded-xl p-4">
-          <h2 className="font-bold text-white mb-3">⭐ Expert Picks</h2>
-          <p className="text-gray-300 text-sm mb-4">
-            Our expert picks receive a transparent scoring boost. These venues
-            have been selected based on quality, atmosphere, and contribution to
-            the local nightlife scene.
+        {/* No bias disclaimer */}
+        <div className="bg-gradient-to-br from-green-900/30 to-gray-800 rounded-xl p-4">
+          <h2 className="font-bold text-white mb-3">Unbiased Rankings</h2>
+          <p className="text-gray-300 text-sm">
+            Our rankings are 100% data-driven with no arbitrary boosts or paid
+            placements. Every venue is ranked purely on aggregated ratings from
+            Google, Yelp, and TripAdvisor. The algorithm is transparent and
+            treats all venues equally.
           </p>
-          <div className="grid gap-2">
-            {[
-              {
-                name: "George's Keep",
-                reason: 'Award-winning craft cocktail bar',
-              },
-              {
-                name: 'Camp 1604',
-                reason: 'Premier NW SA destination',
-              },
-              {
-                name: 'Kung Fu Noodle',
-                reason: 'Unique late-night atmosphere',
-              },
-              {
-                name: 'The Venue',
-                reason: 'Top Boerne entertainment',
-              },
-            ].map((pick) => (
-              <div
-                key={pick.name}
-                className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3"
-              >
-                <div>
-                  <h3 className="font-medium text-white">{pick.name}</h3>
-                  <p className="text-xs text-gray-400">{pick.reason}</p>
-                </div>
-                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">
-                  +10-15%
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Tech stack */}

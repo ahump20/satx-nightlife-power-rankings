@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "satx-nightlife"]
+  "exclude": ["node_modules", "satx-nightlife", "src/workers", "workers"]
 }
