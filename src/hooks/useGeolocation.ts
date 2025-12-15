@@ -7,6 +7,7 @@ interface GeolocationState {
   longitude: number | null;
   error: string | null;
   loading: boolean;
+  permission: 'granted' | 'denied' | 'prompt' | 'unknown';
 }
 
 interface UseGeolocationOptions {
@@ -16,27 +17,82 @@ interface UseGeolocationOptions {
 }
 
 const defaultOptions: UseGeolocationOptions = {
-  enableHighAccuracy: true,
+  enableHighAccuracy: false,
   timeout: 10000,
-  maximumAge: 300000, // 5 minutes
+  maximumAge: 60000, // Cache position for 1 minute
 };
+
+// San Antonio area default coordinates (Alamo)
+const DEFAULT_COORDS = {
+  latitude: 29.4241,
+  longitude: -98.4936,
+};
+
+const STORAGE_KEY = 'satx-user-location';
 
 export function useGeolocation(options: UseGeolocationOptions = {}) {
   const [state, setState] = useState<GeolocationState>({
     latitude: null,
     longitude: null,
     error: null,
-    loading: true,
+    loading: false,
+    permission: 'unknown',
   });
 
   const mergedOptions = { ...defaultOptions, ...options };
 
-  const getPosition = useCallback(() => {
-    if (!navigator.geolocation) {
+  // Check stored location from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const { latitude, longitude, timestamp } = JSON.parse(stored);
+        const age = Date.now() - timestamp;
+        // Use cached location if less than 30 minutes old
+        if (age < 30 * 60 * 1000) {
+          setState((prev) => ({
+            ...prev,
+            latitude,
+            longitude,
+          }));
+        }
+      } catch {
+        // Invalid stored data, ignore
+      }
+    }
+  }, []);
+
+  // Check permission status
+  useEffect(() => {
+    if (typeof window === 'undefined' || !navigator.permissions) return;
+
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((result) => {
+        setState((prev) => ({
+          ...prev,
+          permission: result.state as GeolocationState['permission'],
+        }));
+
+        result.onchange = () => {
+          setState((prev) => ({
+            ...prev,
+            permission: result.state as GeolocationState['permission'],
+          }));
+        };
+      })
+      .catch(() => {
+        // Permission API not supported
+      });
+  }, []);
+
+  const requestLocation = useCallback(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       setState((prev) => ({
         ...prev,
-        error: 'Geolocation is not supported by your browser',
-        loading: false,
+        error: 'Geolocation is not supported',
       }));
       return;
     }
@@ -45,25 +101,33 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Store in localStorage
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ latitude, longitude, timestamp: Date.now() })
+        );
+
         setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          latitude,
+          longitude,
           error: null,
           loading: false,
+          permission: 'granted',
         });
       },
       (error) => {
-        let errorMessage = 'Failed to get location';
-
+        let errorMessage = 'Unable to get location';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable location access.';
+            errorMessage = 'Location permission denied';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
+            errorMessage = 'Location unavailable';
             break;
           case error.TIMEOUT:
-            errorMessage = 'Location request timed out.';
+            errorMessage = 'Location request timed out';
             break;
         }
 
@@ -71,6 +135,8 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
           ...prev,
           error: errorMessage,
           loading: false,
+          permission:
+            error.code === error.PERMISSION_DENIED ? 'denied' : prev.permission,
         }));
       },
       {
@@ -81,17 +147,24 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     );
   }, [mergedOptions.enableHighAccuracy, mergedOptions.timeout, mergedOptions.maximumAge]);
 
-  useEffect(() => {
-    getPosition();
-  }, [getPosition]);
-
-  const refresh = useCallback(() => {
-    getPosition();
-  }, [getPosition]);
+  const clearLocation = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    setState({
+      latitude: null,
+      longitude: null,
+      error: null,
+      loading: false,
+      permission: 'unknown',
+    });
+  }, []);
 
   return {
     ...state,
-    refresh,
+    requestLocation,
+    clearLocation,
     hasLocation: state.latitude !== null && state.longitude !== null,
+    defaultCoords: DEFAULT_COORDS,
   };
 }
