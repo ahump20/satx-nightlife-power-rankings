@@ -14,7 +14,7 @@ import { leaderboardRoutes } from './routes/leaderboards';
 import { venueRoutes } from './routes/venues';
 import { dealRoutes } from './routes/deals';
 import { adminRoutes } from './routes/admin';
-import { runHourlyIngestion } from './jobs/hourly-ingest';
+import { runHourlyIngest } from './jobs/hourly-ingest';
 import { runDailyRollup } from './jobs/daily-rollup';
 import { runMonthlySnapshot } from './jobs/monthly-snapshot';
 
@@ -148,7 +148,7 @@ export default {
       } else {
         // Hourly ingestion
         console.log('[Cron] Running hourly ingestion job');
-        await runHourlyIngestion(env);
+        await runHourlyIngest(env);
       }
     } catch (error) {
       console.error('[Cron] Job failed:', error);
