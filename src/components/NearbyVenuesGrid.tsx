@@ -210,10 +210,10 @@ export function NearbyVenuesGrid({ title = 'Near You' }: NearbyVenuesGridProps) 
                     #{venue.currentRanking.rank}
                   </span>
                 )}
-                {venue.ratings?.[0] && (
+                {venue.ratings?.[0]?.rating != null && (
                   <span className="flex items-center gap-1 text-yellow-300">
                     <Star className="w-3 h-3 fill-current" />
-                    {venue.ratings[0].rating}
+                    {venue.ratings?.[0]?.rating}
                   </span>
                 )}
                 <span className="ml-auto flex items-center gap-1 text-purple-300">
