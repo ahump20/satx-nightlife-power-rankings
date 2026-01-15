@@ -52,7 +52,11 @@ export function NearbyVenuesGrid({ title = 'Near You' }: NearbyVenuesGridProps) 
     if (!venues) return [];
     if (!latitude || !longitude) return venues;
     return venues.filter((venue: HydratedVenue) => {
-      if (venue.distance === undefined || venue.distance === null) return true;
+      if (venue.distance == null) {
+        // When geolocation is available and a radius is selected,
+        // exclude venues with no distance data from the filtered list.
+        return false;
+      }
       return venue.distance <= radius;
     });
   }, [venues, latitude, longitude, radius]);
