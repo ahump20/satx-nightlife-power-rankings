@@ -201,7 +201,7 @@ export function NearbyVenuesGrid({ title = 'Near You' }: NearbyVenuesGridProps) 
                   </p>
                 </div>
                 <div className="text-right">
-                  {venue.liveScore && (
+                  {venue.liveScore !== null && venue.liveScore !== undefined && (
                     <p className="text-sm font-semibold text-purple-300">{venue.liveScore.toFixed(1)}</p>
                   )}
                   <p className="text-[11px] text-gray-500">Power</p>
