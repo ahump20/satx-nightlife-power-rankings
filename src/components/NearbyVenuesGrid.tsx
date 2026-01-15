@@ -42,11 +42,14 @@ export function NearbyVenuesGrid({ title = 'Near You' }: NearbyVenuesGridProps) 
     sort: 'distance',
   });
 
+  // `refreshVenues` comes from SWR's mutate and is expected to be stable.
+  // We intentionally omit it from the dependency array to avoid unnecessary re-renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (latitude && longitude) {
       refreshVenues();
     }
-  }, [latitude, longitude, refreshVenues]);
+  }, [latitude, longitude]);
 
   const filteredVenues = useMemo(() => {
     if (!venues) return [];
