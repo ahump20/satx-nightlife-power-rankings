@@ -307,8 +307,6 @@ function setupEventListeners() {
         searchVenues(e.target.value);
     });
     
-    // Search button
-    
     // Sort select
     sortSelect.addEventListener('change', (e) => {
         sortVenues(e.target.value);
