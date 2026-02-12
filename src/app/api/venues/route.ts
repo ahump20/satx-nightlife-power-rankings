@@ -59,7 +59,7 @@ export async function GET(request: Request) {
         hasEventTonight: venue.events.some(
           (e) => new Date(e.startTime).toDateString() === now.toDateString()
         ),
-        isOpenNow: currentHour >= 16 && currentHour < 2, // Simplified check
+        isOpenNow: currentHour >= 16 || currentHour < 2, // Simplified check for 4pm–2am
         userDistance: distance,
         previousRank: venue.currentRanking?.previousRank || null,
         currentRank: venue.currentRanking?.rank || null,
