@@ -48,14 +48,33 @@ export async function GET(request: Request) {
         recentReviewCount: Math.round((googleRating?.reviewCount || 0) * 0.1),
         totalReviewCount: googleRating?.reviewCount || 0,
         activeDealsCount: venue.deals.filter((d) => d.isActive).length,
-        hasHappyHourNow: venue.deals.some(
-          (d) =>
-            d.dealType === 'happy_hour' &&
-            d.startTime &&
-            d.endTime &&
-            currentHour >= parseInt(d.startTime) &&
-            currentHour < parseInt(d.endTime)
-        ),
+        hasHappyHourNow: venue.deals.some((d) => {
+          if (d.dealType !== 'happy_hour' || !d.startTime || !d.endTime) {
+            return false;
+          }
+
+          const startParts = d.startTime.split(':');
+          const endParts = d.endTime.split(':');
+          const startHour = parseInt(startParts[0], 10);
+          const endHour = parseInt(endParts[0], 10);
+
+          if (Number.isNaN(startHour) || Number.isNaN(endHour)) {
+            return false;
+          }
+
+          if (startHour === endHour) {
+            // Zero-length window; treat as inactive.
+            return false;
+          }
+
+          if (startHour < endHour) {
+            // Same-day window, e.g., 17:00–19:00
+            return currentHour >= startHour && currentHour < endHour;
+          }
+
+          // Overnight window, e.g., 23:00–01:00
+          return currentHour >= startHour || currentHour < endHour;
+        }),
         hasEventTonight: venue.events.some(
           (e) => new Date(e.startTime).toDateString() === now.toDateString()
         ),
