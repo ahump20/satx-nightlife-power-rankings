@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useScoringMethodology } from '@/hooks/useVenues';
-import { Info, ChevronDown, ChevronUp, Star, Scale } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Scale } from 'lucide-react';
 
 export function ScoringExplainer() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { weights, categories, expertPicks, methodology, isLoading } = useScoringMethodology();
+  const { categories, expertPicks, methodology, isLoading } = useScoringMethodology();
 
   if (isLoading) {
     return (

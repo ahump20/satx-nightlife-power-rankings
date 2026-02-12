@@ -2,7 +2,7 @@
 
 import { useTonight } from '@/hooks/useVenues';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { RefreshCw, MapPin, Star, TrendingUp, Clock, Tag } from 'lucide-react';
+import { RefreshCw, MapPin, Star, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 export function TonightTopBar() {
