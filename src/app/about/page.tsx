@@ -1,5 +1,5 @@
 import { ScoringExplainer } from '@/components/ScoringExplainer';
-import { Info, Mail } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export const metadata = {
   title: 'About | SATX Nightlife Power Rankings',
