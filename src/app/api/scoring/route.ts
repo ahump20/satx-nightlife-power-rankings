@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { SCORING_WEIGHTS, getWeightExplanation } from '@/lib/scoring/algorithm';
+import { getWeightExplanation } from '@/lib/scoring/algorithm';
 import { EXPERT_PICKS } from '@/lib/db/schema';
 
 export async function GET() {
